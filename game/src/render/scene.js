@@ -42,6 +42,6 @@ export function drawFrame(ctx, game, pointer) {
     ctx.fillStyle = COLORS.dim;
     ctx.font = "600 14px 'Trebuchet MS', sans-serif";
     ctx.textAlign = 'right';
-    ctx.fillText('sound off (M)', VIEW.width - 24, 124);
+    ctx.fillText('sound off (M)', VIEW.width - 24, 182);
   }
 }

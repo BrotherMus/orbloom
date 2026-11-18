@@ -2,6 +2,7 @@
 
 import { BOSS_NIGHTS, COLORS, NIGHTS, PLANET, SEEDS, SEED_ORDER, VIEW, watchOf } from '../config.js';
 import { BOONS, boonTint } from '../boons.js';
+import { wishProgress } from '../wishes.js';
 import { SONG_COOLDOWN, pulseCooldown } from '../gardener.js';
 import { newThreat, nightName, nightProgress } from '../waves.js';
 import { bar, glowDot, panel, write } from './brush.js';
@@ -22,6 +23,7 @@ export function drawHud(ctx, game) {
   drawNightPanel(ctx, game);
   drawHeartPanel(ctx, game);
   drawScorePanel(ctx, game);
+  drawWishPanel(ctx, game);
   drawDewPanel(ctx, game);
   drawSeedBar(ctx, game);
   drawLanternPanel(ctx, game);
@@ -100,6 +102,18 @@ function drawScorePanel(ctx, game) {
   if (game.combo > 1) write(ctx, `COMBO ×${game.combo}`, 978, 78, { size: 19, weight: 800, color: COLORS.nova, glow: COLORS.nova });
   else write(ctx, 'chain kills for a combo', 978, 78, { size: 14, color: COLORS.dim });
   write(ctx, `best ${Math.max(game.best, game.score).toLocaleString('en-US')}`, 1242, 78, { size: 15, align: 'right', color: COLORS.dim });
+}
+
+// Tonight's wish sits under the score: what the garden asks for, how far along it is, and what it pays.
+function drawWishPanel(ctx, game) {
+  const wish = game.wish;
+  if (!wish) return;
+  const tint = wish.granted ? COLORS.gold : COLORS.nova;
+  panel(ctx, 960, 110, 300, 52, { edge: tint, radius: 12 });
+  write(ctx, wish.granted ? 'WISH GRANTED' : 'TONIGHT\'S WISH', 976, 126, { size: 13, weight: 800, color: tint, spacing: 2 });
+  write(ctx, `+${wish.reward} dew`, 1244, 126, { size: 14, weight: 800, align: 'right', color: COLORS.ice });
+  write(ctx, wish.text, 976, 147, { size: 16, weight: 700, color: COLORS.ink });
+  if (!wish.kind.atDawn) write(ctx, `${wishProgress(game)}/${wish.goal}`, 1244, 147, { size: 15, weight: 800, align: 'right', color: tint });
 }
 
 function drawDewPanel(ctx, game) {

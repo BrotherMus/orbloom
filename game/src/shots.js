@@ -58,12 +58,13 @@ export function stageShot(game, shot) {
   }
   startRun(game);
   if (shot.name === 'boons') {
-    growGarden(game, GARDEN.slice(0, 7).map(([kind]) => [kind, 1]), ['keen', 'honeydew', 'lantern']);
-    game.night = 4;
+    // The end of the Frost Watch: eight nights survived, the Ember Watch ahead.
+    growGarden(game, GARDEN.map(([kind, level]) => [kind, Math.min(level, 2)]), ['keen', 'honeydew', 'lantern', 'thumb', 'hoarfrost', 'volley', 'roots']);
+    game.night = 8;
     game.dew = 64;
-    game.score = 6120;
-    game.health = 18;
-    game.stats = { kills: 96, planted: 7, dewGathered: 410, nights: 4 };
+    game.score = 41350;
+    game.health = 22;
+    game.stats = { kills: 486, planted: 15, dewGathered: 1920, nights: 8, wishes: 5 };
     rollBoons(game);
     return;
   }
@@ -73,7 +74,7 @@ export function stageShot(game, shot) {
     game.dew = 310;
     game.health = 21;
     game.score = 104250;
-    game.stats = { kills: 948, planted: 14, dewGathered: 3120, nights: 12 };
+    game.stats = { kills: 948, planted: 14, dewGathered: 3120, nights: 12, wishes: 9 };
     game.best = game.score;
     game.newBest = true;
     game.mode = 'won';
@@ -87,7 +88,7 @@ export function stageShot(game, shot) {
   game.score = night * night * 610 + 240;
   game.best = 96400;
   game.health = game.maxHealth - 5;
-  game.stats = { kills: night * 62, planted: 12 + night, dewGathered: night * 260, nights: night - 1 };
+  game.stats = { kills: night * 62, planted: 12 + night, dewGathered: night * 260, nights: night - 1, wishes: Math.floor(night * 0.7) };
   startNight(game, night);
   playFor(game, shot.seconds - 1.2);
   // Skip the Eclipse's long approach so the frame catches it bearing down on the garden.

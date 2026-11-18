@@ -8,7 +8,7 @@ import { glowDot, panel, paragraph, write } from './brush.js';
 import { drawSeedIcon } from './garden.js';
 
 const MIDDLE = VIEW.width / 2;
-const BOON_CARD = { width: 300, height: 290, gap: 36, y: 262 };
+const BOON_CARD = { width: 320, height: 290, gap: 30, y: 262 };
 
 function veil(ctx, strength) {
   ctx.fillStyle = `rgba(5, 7, 24, ${strength})`;
@@ -68,11 +68,12 @@ export function drawTitle(ctx, game) {
     write(ctx, seed.blurb, 950, y + 12, { size: 14, color: COLORS.ink });
   });
 
-  const pulse = 0.85 + 0.15 * Math.sin(game.time * 4);
-  panel(ctx, MIDDLE - 250, 684, 500, 58, { fill: 'rgba(54, 40, 12, 0.94)', edge: COLORS.gold, radius: 29, line: 2.5 });
-  write(ctx, 'CLICK or press ENTER to begin', MIDDLE, 714, { size: 26, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold });
+  // The start prompt is drawn big enough to read even when the screen is shown small.
+  const pulse = 0.88 + 0.12 * Math.sin(game.time * 4);
+  panel(ctx, MIDDLE - 350, 664, 700, 88, { fill: 'rgba(54, 40, 12, 0.96)', edge: COLORS.gold, radius: 44, line: 4 });
+  write(ctx, 'PRESS ENTER TO START', MIDDLE, 710, { size: 52, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold, spacing: 3 });
   const best = game.best > 0 ? `   ·   best garden ${game.best.toLocaleString('en-US')}` : '';
-  write(ctx, `${game.difficulty.name}: ${game.difficulty.lore}   ·   ← → or click to change${best}`, MIDDLE, 768, { size: 16, align: 'center', color: COLORS.dim });
+  write(ctx, `or click anywhere   ·   ${game.difficulty.name}: ${game.difficulty.lore}   ·   ← → change${best}`, MIDDLE, 776, { size: 16, align: 'center', color: COLORS.dim });
 }
 
 // The three difficulty pills on the title screen, as clickable boxes.
@@ -91,8 +92,9 @@ export function boonCardRects() {
 
 export function drawBoonChoice(ctx, game, pointer) {
   veil(ctx, 0.62);
-  write(ctx, `NIGHT ${game.night} SURVIVED`, MIDDLE, 118, { size: 54, weight: 800, align: 'center', color: COLORS.gold, spacing: 6, glow: 'rgba(255, 209, 102, 0.7)' });
-  write(ctx, `+${game.night * 100} points  ·  the garden offers a boon — choose one`, MIDDLE, 178, { size: 24, align: 'center', color: COLORS.ink });
+  write(ctx, `NIGHT ${game.night} SURVIVED`, MIDDLE, 104, { size: 72, weight: 800, align: 'center', color: COLORS.gold, spacing: 6, glow: 'rgba(255, 209, 102, 0.7)' });
+  write(ctx, 'CHOOSE A BOON', MIDDLE, 176, { size: 44, weight: 800, align: 'center', color: COLORS.ink, spacing: 8 });
+  write(ctx, `+${Math.round(game.night * 100 * game.difficulty.score)} points for the night  ·  the garden offers three gifts, keep one`, MIDDLE, 226, { size: 19, align: 'center', color: COLORS.dim });
   for (const card of boonCardRects()) {
     const boon = game.boonChoices[card.index];
     if (!boon) continue;
@@ -107,8 +109,8 @@ export function drawBoonChoice(ctx, game, pointer) {
     ctx.arc(cx, top + 84, 30, 0, Math.PI * 2);
     ctx.fill();
     write(ctx, String(card.index + 1), cx, top + 86, { size: 32, weight: 800, align: 'center', color: tint });
-    write(ctx, boon.name, cx, top + 166, { size: 28, weight: 800, align: 'center', color: tint });
-    paragraph(ctx, boon.text, cx, top + 212, card.width - 48, { size: 19, color: COLORS.ink });
+    write(ctx, boon.name, cx, top + 164, { size: 34, weight: 800, align: 'center', color: tint });
+    paragraph(ctx, boon.text, cx, top + 212, card.width - 44, { size: 20, color: COLORS.ink });
   }
   write(ctx, 'Click a card, or press 1, 2 or 3', MIDDLE, 584, { size: 20, weight: 700, align: 'center', color: COLORS.dim });
   drawNightPath(ctx, game);
@@ -167,7 +169,7 @@ export function drawResults(ctx, game) {
   write(ctx, won ? `You held back the Gloam for all ${NIGHTS} nights. The garden lives!` : `The Gloam reached the world heart on night ${game.night} of ${NIGHTS}.`, MIDDLE, 178, { size: 24, align: 'center', color: COLORS.ink });
 
   panel(ctx, MIDDLE - 330, 222, 660, 372, { radius: 22, edge: tint, line: 2.5 });
-  write(ctx, 'FINAL SCORE', MIDDLE, 258, { size: 18, weight: 700, align: 'center', color: COLORS.dim, spacing: 4 });
+  write(ctx, 'FINAL SCORE', MIDDLE, 256, { size: 24, weight: 800, align: 'center', color: COLORS.dim, spacing: 5 });
   write(ctx, game.score.toLocaleString('en-US'), MIDDLE, 314, { size: 78, weight: 800, align: 'center', color: COLORS.gold, glow: 'rgba(255, 209, 102, 0.6)' });
   write(ctx, game.newBest ? '★ NEW BEST ★' : `best ${game.best.toLocaleString('en-US')}`, MIDDLE, 370, { size: 20, weight: 800, align: 'center', color: game.newBest ? COLORS.nova : COLORS.dim, spacing: 2 });
   write(ctx, `Rank: ${gardenerRank(game)}`, MIDDLE, 408, { size: 24, weight: 800, align: 'center', color: COLORS.leaf });
@@ -177,7 +179,7 @@ export function drawResults(ctx, game) {
     ['Gloam banished', String(game.stats.kills)],
     ['Seeds planted', String(game.stats.planted)],
     ['Dew gathered', String(game.stats.dewGathered)],
-    ['Boons taken', String(game.boons.taken.length)],
+    ['Boons · wishes', `${game.boons.taken.length} · ${game.stats.wishes}`],
     ['World heart', `${Math.ceil(game.health)} / ${game.maxHealth}`],
     ['Watch reached', watchOf(game.night).name],
     ['Difficulty', `${game.difficulty.name} ×${game.difficulty.score}`],
@@ -189,7 +191,8 @@ export function drawResults(ctx, game) {
     write(ctx, value, x + 270, y, { size: 21, weight: 800, align: 'right', color: COLORS.ink });
   });
 
-  const pulse = 0.85 + 0.15 * Math.sin(game.time * 4);
-  panel(ctx, MIDDLE - 290, 632, 580, 60, { fill: 'rgba(54, 40, 12, 0.94)', edge: COLORS.gold, radius: 30, line: 2.5 });
-  write(ctx, 'Press R or CLICK to plant a new garden', MIDDLE, 663, { size: 26, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold });
+  // The restart prompt, like the start prompt, is big enough to read at a glance.
+  const pulse = 0.88 + 0.12 * Math.sin(game.time * 4);
+  panel(ctx, MIDDLE - 360, 610, 720, 86, { fill: 'rgba(54, 40, 12, 0.96)', edge: COLORS.gold, radius: 43, line: 4 });
+  write(ctx, 'PRESS R TO PLAY AGAIN', MIDDLE, 655, { size: 50, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold, spacing: 3 });
 }

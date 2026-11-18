@@ -22,7 +22,7 @@
 | `←` / `→` on the title | Choose Gentle, Wild or Starless difficulty |
 | `P`, `M`, `R` | Pause, mute, restart |
 
-You win by surviving all twelve nights; you lose when the world heart runs out. The night passes through three watches (Dusk, Frost, Ember), each with its own sky and its own rule. Chain kills for a combo, and beat your best score.
+You win by surviving all twelve nights; you lose when the world heart runs out. The night passes through three watches (Dusk, Frost, Ember), each with its own sky and its own rule, and every night the garden makes a wish: an optional goal that pays dew and score. Chain kills for a combo, and beat your best score.
 
 ## Run it
 
@@ -39,7 +39,7 @@ mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ## Layout
 
 - `game/src/config.js` tuning table · `state.js` the game object · `simulation.js` one tick of the rules
-- `plants.js`, `enemies.js`, `gardener.js`, `waves.js`, `boons.js` the rules, one job each
+- `plants.js`, `enemies.js`, `gardener.js`, `waves.js`, `boons.js`, `wishes.js` the rules, one job each
 - `autoplay.js`, `demo.js` the robot gardener behind the title screen · `shots.js` screenshot staging (`shots.json`)
 - `audio.js` synthesised sound and music · `input.js`, `storage.js`
 - `render/` sky, garden, creatures, sparks, HUD and screens

@@ -4,6 +4,7 @@ import { BOSS_NIGHTS, GLOAM, NIGHTS, TAU } from './config.js';
 import { pick, random, randomRange } from './rng.js';
 import { spawnEnemy } from './enemies.js';
 import { showBanner } from './state.js';
+import { makeWish } from './wishes.js';
 
 const NIGHT_NAMES = [
   'First Dusk', 'Whispering Dark', 'The Gnawing', 'Husk Fall', 'Twin Shades', 'THE ECLIPSE',
@@ -46,6 +47,7 @@ export function startNight(game, night) {
   const { queue, fronts } = buildNight(night);
   // fronts are kept so the HUD can warn where tonight's Gloam will come from.
   game.wave = { queue, fronts, clock: 0, total: queue.length, spawned: 0 };
+  makeWish(game);
   showBanner(game, `NIGHT ${night} OF ${NIGHTS}`, nightName(night));
   game.sound('night');
 }

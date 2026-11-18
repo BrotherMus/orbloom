@@ -8,6 +8,7 @@ import { updateDew, updateGardener } from './gardener.js';
 import { updateEmbers, updatePlants, updateThorns } from './plants.js';
 import { startNight, updateWave } from './waves.js';
 import { rollBoons, takeBoon } from './boons.js';
+import { settleWish, updateWish } from './wishes.js';
 
 export function startRun(game) {
   resetRun(game);
@@ -26,6 +27,7 @@ export function stepGame(game, controls, dt) {
   updateEmbers(game, dt);
   updateEnemies(game, dt);
   updateDew(game, dt);
+  updateWish(game);
   updateEffects(game, dt);
   if (game.health <= 0) {
     finishRun(game, 'lost');
@@ -35,6 +37,7 @@ export function stepGame(game, controls, dt) {
 }
 
 function endNight(game) {
+  settleWish(game);
   game.stats.nights = game.night;
   game.score += Math.round(game.night * 100 * game.difficulty.score);
   if (game.night >= NIGHTS) {

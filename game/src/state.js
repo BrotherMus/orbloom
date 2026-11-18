@@ -35,7 +35,8 @@ export function resetRun(game) {
     emberSplash: 1, bellMend: 0, volley: 0, comboWindow: 1, pulsePower: 0, taken: [],
   };
   game.boonChoices = [];
-  game.stats = { kills: 0, planted: 0, dewGathered: 0, nights: 0 };
+  game.stats = { kills: 0, planted: 0, dewGathered: 0, nights: 0, wishes: 0 };
+  game.wish = null;
   game.shake = 0;
   game.hurtFlash = 0;
   game.banner = { text: '', sub: '', timer: 0 };
