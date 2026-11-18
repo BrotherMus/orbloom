@@ -131,6 +131,8 @@ export function damageEnemy(game, enemy, amount, quiet = false) {
   game.combo += 1;
   game.comboTimer = COMBO_WINDOW * game.boons.comboWindow;
   game.stats.kills += 1;
+  // Every tenth kill in a chain is called out in big letters above the garden.
+  if (game.combo % 10 === 0) floater(game, PLANET.x, PLANET.y - PLANET.radius - 96, `COMBO ×${game.combo}!`, COLORS.nova, 44);
   addScore(game, breed.score);
   burst(game, at.x, at.y, breed.tint, breed.size > 30 ? 60 : 14, breed.size > 30 ? 320 : 150);
   ring(game, at.x, at.y, breed.size * 2.4, breed.tint, 0.4);

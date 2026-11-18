@@ -68,6 +68,6 @@ export function drawSparks(ctx, game) {
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
   for (const f of game.floaters) {
-    write(ctx, f.text, f.x, f.y, { size: 17, align: 'center', color: f.color, weight: 700, alpha: Math.min(1, f.life / 0.4), glow: '#000' });
+    write(ctx, f.text, f.x, f.y, { size: f.size ?? 17, align: 'center', color: f.color, weight: 800, alpha: Math.min(1, f.life / 0.4), glow: f.size > 20 ? f.color : '#000' });
   }
 }

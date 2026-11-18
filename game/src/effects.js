@@ -18,8 +18,8 @@ export function ring(game, x, y, radius, color, life = 0.5) {
   game.rings.push({ x, y, radius, color, life, maxLife: life });
 }
 
-export function floater(game, x, y, text, color) {
-  game.floaters.push({ x, y, text, color, life: 1.1, maxLife: 1.1 });
+export function floater(game, x, y, text, color, size = 17) {
+  game.floaters.push({ x, y, text, color, size, life: size > 20 ? 1.6 : 1.1, maxLife: 1.1 });
 }
 
 export function updateEffects(game, dt) {
