@@ -19,7 +19,8 @@ const GARDEN = [
 export function shotRequest() {
   const query = new URLSearchParams(window.location.search);
   const name = query.get('shot');
-  return name ? { name, seed: Number(query.get('seed')) || 1, seconds: Number(query.get('seconds')) || 20 } : null;
+  // live=1 keeps playing from the staged moment, which is how the later nights are play-tested.
+  return name ? { name, seed: Number(query.get('seed')) || 1, seconds: Number(query.get('seconds')) || 20, live: query.get('live') === '1' } : null;
 }
 
 // Grow a mid-run garden the way a player would have by this night: plant, then upgrade.

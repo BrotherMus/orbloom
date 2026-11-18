@@ -17,6 +17,35 @@ const NEBULAE = [
   { x: 1010, y: 130, radius: 300, color: 'rgba(255, 122, 217, 0.12)' },
 ];
 
+// Two far-off moons, one ringed, drift a little so the sky never sits quite still.
+function drawFarMoons(ctx, game) {
+  const drift = Math.sin(game.time * 0.05) * 6;
+  const ringed = { x: 1128 + drift, y: 232, radius: 34 };
+  ctx.save();
+  ctx.globalAlpha = 0.55;
+  const shade = ctx.createRadialGradient(ringed.x - 12, ringed.y - 12, 4, ringed.x, ringed.y, ringed.radius);
+  shade.addColorStop(0, '#c9b8ff');
+  shade.addColorStop(1, '#3b2a78');
+  ctx.fillStyle = shade;
+  ctx.beginPath();
+  ctx.arc(ringed.x, ringed.y, ringed.radius, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 209, 102, 0.75)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(ringed.x, ringed.y, ringed.radius * 1.8, ringed.radius * 0.42, -0.35, 0, TAU);
+  ctx.stroke();
+  const small = { x: 148 - drift, y: 590, radius: 20 };
+  const frost = ctx.createRadialGradient(small.x - 7, small.y - 7, 2, small.x, small.y, small.radius);
+  frost.addColorStop(0, '#bff3ff');
+  frost.addColorStop(1, '#1f4d73');
+  ctx.fillStyle = frost;
+  ctx.beginPath();
+  ctx.arc(small.x, small.y, small.radius, 0, TAU);
+  ctx.fill();
+  ctx.restore();
+}
+
 export function drawSky(ctx, game) {
   const sky = ctx.createLinearGradient(0, 0, 0, VIEW.height);
   sky.addColorStop(0, COLORS.skyTop);
@@ -41,6 +70,8 @@ export function drawSky(ctx, game) {
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+
+  drawFarMoons(ctx, game);
 
   // Faint orbit rings show how far the garden's plants can reach.
   ctx.strokeStyle = 'rgba(155, 231, 255, 0.07)';

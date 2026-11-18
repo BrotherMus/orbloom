@@ -14,6 +14,12 @@ export function nightName(night) {
   return NIGHT_NAMES[night - 1] ?? 'Endless Dark';
 }
 
+// The creature a night brings for the first time (the Eclipse on boss nights), or null.
+export function newThreat(night) {
+  if (BOSS_NIGHTS.includes(night)) return GLOAM.eclipse;
+  return Object.values(GLOAM).find((breed) => breed.fromNight === night && night > 1) ?? null;
+}
+
 // A night is a queue of { at, kind, angle }: creatures arrive along a few fronts, so where you plant matters.
 export function buildNight(night) {
   const queue = [];
@@ -31,14 +37,15 @@ export function buildNight(night) {
   }
   if (BOSS_NIGHTS.includes(night)) queue.push({ at: 5, kind: 'eclipse', angle: fronts[0] });
   queue.sort((a, b) => a.at - b.at);
-  return queue;
+  return { queue, fronts };
 }
 
 export function startNight(game, night) {
   game.night = night;
   game.mode = 'playing';
-  const queue = buildNight(night);
-  game.wave = { queue, clock: 0, total: queue.length, spawned: 0 };
+  const { queue, fronts } = buildNight(night);
+  // fronts are kept so the HUD can warn where tonight's Gloam will come from.
+  game.wave = { queue, fronts, clock: 0, total: queue.length, spawned: 0 };
   showBanner(game, `NIGHT ${night} OF ${NIGHTS}`, nightName(night));
   game.sound('night');
 }

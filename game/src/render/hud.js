@@ -1,8 +1,8 @@
 // The heads-up display during play: night, world heart, score and combo, dew, the seed bar and the lantern.
 
-import { COLORS, NIGHTS, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { COLORS, NIGHTS, PLANET, SEEDS, SEED_ORDER, VIEW } from '../config.js';
 import { pulseCooldown } from '../gardener.js';
-import { nightName, nightProgress } from '../waves.js';
+import { newThreat, nightName, nightProgress } from '../waves.js';
 import { bar, glowDot, panel, write } from './brush.js';
 import { drawSeedIcon } from './garden.js';
 
@@ -15,6 +15,8 @@ export function seedCardRects() {
 }
 
 export function drawHud(ctx, game) {
+  drawFrontWarnings(ctx, game);
+  drawCoach(ctx, game);
   drawNightPanel(ctx, game);
   drawHeartPanel(ctx, game);
   drawScorePanel(ctx, game);
@@ -23,7 +25,50 @@ export function drawHud(ctx, game) {
   drawLanternPanel(ctx, game);
   drawBossBar(ctx, game);
   drawBanner(ctx, game);
-  write(ctx, 'A / D walk  ·  SPACE lantern  ·  click a plot to plant or grow  ·  right-click uproots  ·  P pause  ·  M mute', VIEW.width / 2, 694, { size: 14, align: 'center', color: COLORS.dim });
+  if (game.mode === 'playing') {
+    write(ctx, 'A / D walk  ·  SPACE lantern  ·  click a plot to plant or grow  ·  right-click uproots  ·  P pause  ·  M mute', VIEW.width / 2, 694, { size: 14, align: 'center', color: COLORS.dim });
+  }
+}
+
+// Red chevrons at the edge of the sky show where tonight's Gloam is coming from, while more are due.
+function drawFrontWarnings(ctx, game) {
+  if (game.mode !== 'playing' || game.wave.queue.length === 0) return;
+  const beat = 0.8 + 0.2 * Math.sin(game.time * 6);
+  for (const front of game.wave.fronts) {
+    const reach = Math.min(560 / Math.abs(Math.cos(front) || 0.001), 258 / Math.abs(Math.sin(front) || 0.001));
+    const x = PLANET.x + Math.cos(front) * reach;
+    const y = PLANET.y - 46 + Math.sin(front) * reach;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(front + Math.PI);
+    ctx.globalAlpha = beat;
+    ctx.strokeStyle = COLORS.danger;
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const step of [0, 14]) {
+      ctx.beginPath();
+      ctx.moveTo(step - 8, -13);
+      ctx.lineTo(step + 5, 0);
+      ctx.lineTo(step - 8, 13);
+      ctx.stroke();
+    }
+    ctx.restore();
+    glowDot(ctx, x, y, 34, COLORS.danger, 0.35 * beat);
+  }
+}
+
+// First-night coaching: one short line telling a new player what to do next.
+function drawCoach(ctx, game) {
+  if (game.mode !== 'playing' || game.night !== 1 || game.banner.timer > 0) return;
+  let tip = '';
+  if (game.stats.planted === 0) tip = 'Click a plot on the little world to plant your first Thornbud';
+  else if (game.stats.planted < 3) tip = 'Plant where the red arrows point — that is where the Gloam will fall';
+  else if (game.stats.dewGathered === 0) tip = 'Walk with A / D to gather fallen dew  ·  SPACE swings the lantern';
+  if (!tip) return;
+  const width = 660;
+  panel(ctx, VIEW.width / 2 - width / 2, 160, width, 44, { radius: 22, edge: COLORS.gold });
+  write(ctx, tip, VIEW.width / 2, 183, { size: 19, weight: 700, align: 'center', color: COLORS.gold, alpha: 0.8 + 0.2 * Math.sin(game.time * 5) });
 }
 
 function drawNightPanel(ctx, game) {
@@ -103,4 +148,6 @@ function drawBanner(ctx, game) {
   const alpha = Math.min(1, game.banner.timer / 0.5);
   write(ctx, game.banner.text, VIEW.width / 2, 176, { size: 46, weight: 800, align: 'center', color: COLORS.ink, spacing: 6, alpha, glow: COLORS.gloamEdge });
   write(ctx, game.banner.sub, VIEW.width / 2, 216, { size: 22, align: 'center', color: COLORS.nova, alpha, spacing: 2 });
+  const threat = newThreat(game.night);
+  if (threat) write(ctx, `New tonight: ${threat.name} — ${threat.lore}`, VIEW.width / 2, 250, { size: 18, align: 'center', color: COLORS.ink, alpha });
 }

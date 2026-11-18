@@ -1,7 +1,8 @@
 // Full-screen layers over the garden: the title, the boon choice, the pause veil and the results.
 
-import { COLORS, NIGHTS, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { BOSS_NIGHTS, COLORS, NIGHTS, SEEDS, SEED_ORDER, VIEW } from '../config.js';
 import { gardenerRank } from '../simulation.js';
+import { newThreat, nightName } from '../waves.js';
 import { glowDot, panel, paragraph, write } from './brush.js';
 import { drawSeedIcon } from './garden.js';
 
@@ -56,7 +57,7 @@ export function drawTitle(ctx, game) {
   });
 
   const pulse = 0.85 + 0.15 * Math.sin(game.time * 4);
-  panel(ctx, MIDDLE - 250, 684, 500, 58, { fill: 'rgba(255, 209, 102, 0.16)', edge: COLORS.gold, radius: 29, line: 2.5 });
+  panel(ctx, MIDDLE - 250, 684, 500, 58, { fill: 'rgba(54, 40, 12, 0.94)', edge: COLORS.gold, radius: 29, line: 2.5 });
   write(ctx, 'CLICK or press ENTER to begin', MIDDLE, 714, { size: 26, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold });
   write(ctx, game.best > 0 ? `Best garden: ${game.best.toLocaleString('en-US')} points` : 'Twelve nights · four seeds · eleven boons · two eclipses', MIDDLE, 768, { size: 17, align: 'center', color: COLORS.dim });
 }
@@ -90,8 +91,42 @@ export function drawBoonChoice(ctx, game, pointer) {
     write(ctx, boon.name, cx, top + 166, { size: 28, weight: 800, align: 'center', color: tint });
     paragraph(ctx, boon.text, cx, top + 212, card.width - 48, { size: 19, color: COLORS.ink });
   }
-  write(ctx, 'Click a card, or press 1, 2 or 3', MIDDLE, 610, { size: 22, weight: 700, align: 'center', color: COLORS.dim });
-  write(ctx, `Next: night ${game.night + 1} of ${NIGHTS}`, MIDDLE, 646, { size: 18, align: 'center', color: COLORS.nova });
+  write(ctx, 'Click a card, or press 1, 2 or 3', MIDDLE, 584, { size: 20, weight: 700, align: 'center', color: COLORS.dim });
+  drawNightPath(ctx, game);
+}
+
+// The road to dawn: twelve nights in a row, the ones survived lit, the Eclipse nights marked, and what comes next.
+function drawNightPath(ctx, game) {
+  const spacing = 62;
+  const left = MIDDLE - ((NIGHTS - 1) * spacing) / 2;
+  const y = 632;
+  ctx.strokeStyle = 'rgba(155, 231, 255, 0.3)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(left, y);
+  ctx.lineTo(left + (NIGHTS - 1) * spacing, y);
+  ctx.stroke();
+  for (let night = 1; night <= NIGHTS; night++) {
+    const x = left + (night - 1) * spacing;
+    const boss = BOSS_NIGHTS.includes(night);
+    const done = night <= game.night;
+    const next = night === game.night + 1;
+    const radius = boss ? 17 : 12;
+    if (next) glowDot(ctx, x, y, 40, COLORS.nova, 0.6 + 0.3 * Math.sin(game.time * 5));
+    ctx.fillStyle = done ? COLORS.gold : boss ? '#0a0416' : '#1a2152';
+    ctx.strokeStyle = boss ? COLORS.eye : next ? COLORS.nova : done ? COLORS.gold : COLORS.panelEdge;
+    ctx.lineWidth = boss || next ? 3 : 2;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    write(ctx, String(night), x, y + 1, { size: 13, weight: 800, align: 'center', color: done ? '#2b1d4a' : boss ? COLORS.eye : COLORS.dim });
+  }
+  write(ctx, 'DUSK', left - 44, y, { size: 13, weight: 800, align: 'center', color: COLORS.dim, spacing: 2 });
+  write(ctx, 'DAWN', left + (NIGHTS - 1) * spacing + 46, y, { size: 13, weight: 800, align: 'center', color: COLORS.gold, spacing: 2 });
+  const threat = newThreat(game.night + 1);
+  const intel = threat ? `  ·  new: ${threat.name}, ${threat.lore}` : '';
+  write(ctx, `Next — night ${game.night + 1}: ${nightName(game.night + 1)}${intel}`, MIDDLE, 672, { size: 17, weight: 700, align: 'center', color: COLORS.nova });
 }
 
 export function drawPause(ctx) {
@@ -130,6 +165,6 @@ export function drawResults(ctx, game) {
   });
 
   const pulse = 0.85 + 0.15 * Math.sin(game.time * 4);
-  panel(ctx, MIDDLE - 290, 632, 580, 60, { fill: 'rgba(255, 209, 102, 0.16)', edge: COLORS.gold, radius: 30, line: 2.5 });
+  panel(ctx, MIDDLE - 290, 632, 580, 60, { fill: 'rgba(54, 40, 12, 0.94)', edge: COLORS.gold, radius: 30, line: 2.5 });
   write(ctx, 'Press R or CLICK to plant a new garden', MIDDLE, 663, { size: 26, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold });
 }

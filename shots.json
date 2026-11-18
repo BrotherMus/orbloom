@@ -1,5 +1,5 @@
 [
-  { "name": "1-play.jpg", "query": "?shot=play&seed=3&seconds=24" },
+  { "name": "1-play.jpg", "query": "?shot=play&seed=5&seconds=30" },
   { "name": "2-title.jpg", "query": "?shot=title&seed=1" },
   { "name": "3-boons.jpg", "query": "?shot=boons&seed=2" },
   { "name": "4-results.jpg", "query": "?shot=results&seed=1" }

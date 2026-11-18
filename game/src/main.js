@@ -153,6 +153,10 @@ if (shot) {
   stageShot(game, shot);
   render();
   document.title = `Orbloom shot: ${shot.name}`;
+  if (shot.live) {
+    game.sound = playSound;
+    requestAnimationFrame(frame);
+  }
 } else {
   game.best = loadBest();
   seedRandom(Date.now());

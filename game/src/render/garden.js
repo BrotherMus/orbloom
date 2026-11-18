@@ -62,6 +62,20 @@ export function drawPlots(ctx, game) {
       ctx.beginPath();
       ctx.ellipse(0, 0, 17, 8, 0, 0, TAU);
       ctx.fill();
+      if (!plot.plant && !hovered && game.mode === 'playing') {
+        // An empty plot beckons with a faint plus sign.
+        ctx.globalAlpha = 0.45 + 0.25 * Math.sin(game.time * 3 + plot.index);
+        ctx.strokeStyle = COLORS.ice;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-6, -18);
+        ctx.lineTo(6, -18);
+        ctx.moveTo(0, -24);
+        ctx.lineTo(0, -12);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
       if (hovered && !plot.plant) {
         ctx.strokeStyle = SEEDS[game.selectedSeed].color;
         ctx.lineWidth = 2;
@@ -112,6 +126,7 @@ function drawPlant(ctx, game, plot, hovered) {
 
   const tip = plantTip(plot);
   if (tended) glowDot(ctx, tip.x, tip.y, 30, COLORS.gold, 0.5);
+  if (plant.kind === 'frost') drawFrostAura(ctx, game, tip, seed.range[plant.level - 1] * (1 + game.boons.frostPower * 0.2));
   for (let pip = 0; pip < plant.level; pip++) {
     inPlotFrame(ctx, plot, () => {
       ctx.fillStyle = seed.color;
@@ -137,6 +152,26 @@ function drawPlant(ctx, game, plot, hovered) {
       ctx.globalAlpha = 1;
     }
   }
+}
+
+// A Frostfern's chill hangs in the air as a pale, slowly breathing disc out to its reach.
+function drawFrostAura(ctx, game, tip, reach) {
+  const breath = 0.85 + 0.15 * Math.sin(game.time * 1.6);
+  const mist = ctx.createRadialGradient(tip.x, tip.y, reach * 0.2, tip.x, tip.y, reach);
+  mist.addColorStop(0, 'rgba(155, 231, 255, 0.0)');
+  mist.addColorStop(0.82, `rgba(155, 231, 255, ${0.085 * breath})`);
+  mist.addColorStop(1, 'rgba(155, 231, 255, 0)');
+  ctx.fillStyle = mist;
+  ctx.beginPath();
+  ctx.arc(tip.x, tip.y, reach, 0, TAU);
+  ctx.fill();
+  ctx.strokeStyle = `rgba(155, 231, 255, ${0.22 * breath})`;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([2, 10]);
+  ctx.beginPath();
+  ctx.arc(tip.x, tip.y, reach * 0.97, 0, TAU);
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
 
 function drawThornbud(ctx, plant, plot) {

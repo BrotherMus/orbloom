@@ -54,12 +54,12 @@ export const SEED_ORDER = ['thorn', 'sun', 'frost', 'nova'];
 
 // The Gloam: every creature that falls on the garden. threat is its price in a night's budget.
 export const GLOAM = {
-  mote: { name: 'Mote', health: 3, speed: 30, size: 16, bite: 1, dew: 2, score: 10, threat: 1, fromNight: 1 },
-  darter: { name: 'Darter', health: 2, speed: 60, size: 13, bite: 1, dew: 2, score: 15, threat: 1.2, fromNight: 2, weave: 1.5 },
-  gnawer: { name: 'Gnawer', health: 7, speed: 36, size: 19, bite: 2, dew: 4, score: 25, threat: 2.2, fromNight: 3, chews: true },
-  twin: { name: 'Twin Shade', health: 8, speed: 26, size: 21, bite: 2, dew: 3, score: 30, threat: 2.6, fromNight: 5, splits: 2 },
-  husk: { name: 'Husk', health: 16, speed: 17, size: 28, bite: 4, dew: 6, score: 45, threat: 4, fromNight: 4 },
-  eclipse: { name: 'The Eclipse', health: 150, speed: 9, size: 56, bite: 12, dew: 40, score: 500, threat: 0, fromNight: 99, orbit: 0.2, broods: 2.4 },
+  mote: { name: 'Mote', health: 3, speed: 30, size: 16, bite: 1, dew: 2, score: 10, threat: 1, fromNight: 1, lore: 'drifts straight for the world heart' },
+  darter: { name: 'Darter', health: 2, speed: 60, size: 13, bite: 1, dew: 2, score: 15, threat: 1.2, fromNight: 2, weave: 1.5, lore: 'fast and weaving, hard for thorns to hit' },
+  gnawer: { name: 'Gnawer', health: 7, speed: 36, size: 19, bite: 2, dew: 4, score: 25, threat: 2.2, fromNight: 3, chews: true, lore: 'lands on a plant and eats it: pulse it off!' },
+  twin: { name: 'Twin Shade', health: 8, speed: 26, size: 21, bite: 2, dew: 3, score: 30, threat: 2.6, fromNight: 5, splits: 2, lore: 'splits into two Motes when banished' },
+  husk: { name: 'Husk', health: 16, speed: 17, size: 28, bite: 4, dew: 6, score: 45, threat: 4, fromNight: 4, lore: 'slow and armoured, with a heavy bite' },
+  eclipse: { name: 'The Eclipse', health: 150, speed: 9, size: 56, bite: 12, dew: 40, score: 500, threat: 0, fromNight: 99, orbit: 0.2, broods: 2.4, lore: 'a boss that circles the world and broods Motes' },
 };
 export const BOSS_NIGHTS = [6, 12];
 

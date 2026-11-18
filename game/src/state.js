@@ -28,7 +28,7 @@ export function resetRun(game) {
   game.floaters = [];
   game.selectedSeed = 'thorn';
   game.hoverPlot = -1;
-  game.wave = { queue: [], clock: 0, total: 0, spawned: 0 };
+  game.wave = { queue: [], fronts: [], clock: 0, total: 0, spawned: 0 };
   game.boons = { thornDamage: 0, dewGain: 1, pulseCooldown: 1, walkSpeed: 1, reach: 1, frostPower: 0, novaRadius: 1, tendBonus: 1, sunGain: 1, taken: [] };
   game.boonChoices = [];
   game.stats = { kills: 0, planted: 0, dewGathered: 0, nights: 0 };
