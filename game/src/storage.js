@@ -10,6 +10,22 @@ export function loadBest() {
   }
 }
 
+export function loadDifficultyId() {
+  try {
+    return localStorage.getItem(`${KEY}.difficulty`) || 'wild';
+  } catch {
+    return 'wild';
+  }
+}
+
+export function saveDifficultyId(id) {
+  try {
+    localStorage.setItem(`${KEY}.difficulty`, id);
+  } catch {
+    // Not kept: the title screen simply starts on Wild next time.
+  }
+}
+
 export function saveBest(score) {
   try {
     localStorage.setItem(KEY, String(score));

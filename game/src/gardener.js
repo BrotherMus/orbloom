@@ -5,6 +5,8 @@ import { angleDiff, distanceBetween, toScreen, wrapAngle } from './geometry.js';
 import { burst, floater, ring } from './effects.js';
 import { damageEnemy, enemyPosition } from './enemies.js';
 
+export const SONG_COOLDOWN = 22;
+
 export function gardenerPosition(game) {
   return toScreen(game.gardener.angle, PLANET.radius + 16);
 }
@@ -17,7 +19,7 @@ export function pulseRange(game) {
   return GARDENER.pulseRange * (1 + game.boons.pulsePower * 0.2);
 }
 
-// controls: { walk: -1 | 0 | 1, pulse: boolean }
+// controls: { walk: -1 | 0 | 1, pulse: boolean, song: boolean }
 export function updateGardener(game, controls, dt) {
   const pip = game.gardener;
   pip.walking = controls.walk !== 0;
@@ -27,7 +29,32 @@ export function updateGardener(game, controls, dt) {
     pip.stride += dt * 11;
   }
   pip.pulseTimer = Math.max(0, pip.pulseTimer - dt);
+  pip.songTimer = Math.max(0, pip.songTimer - dt);
   if (controls.pulse && pip.pulseTimer <= 0) lanternPulse(game);
+  if (controls.song && pip.songTimer <= 0) dewSong(game);
+}
+
+// Pip's second gift: a song that calls every dew drop home and makes every plant act at once.
+function dewSong(game) {
+  const pip = game.gardener;
+  pip.songTimer = SONG_COOLDOWN;
+  let gathered = 0;
+  for (const drop of game.dewDrops) {
+    gathered += drop.value;
+    drop.life = 0;
+  }
+  game.dew += gathered;
+  game.stats.dewGathered += gathered;
+  for (const plot of game.plots) {
+    if (!plot.plant) continue;
+    plot.plant.timer = 0;
+    plot.plant.recoil = 1;
+  }
+  const from = gardenerPosition(game);
+  ring(game, PLANET.x, PLANET.y, 300, COLORS.leaf, 0.8);
+  ring(game, PLANET.x, PLANET.y, 190, COLORS.ice, 0.6);
+  floater(game, from.x, from.y - 40, gathered > 0 ? `Dew Song  +${gathered}` : 'Dew Song', COLORS.leaf);
+  game.sound('boon');
 }
 
 function lanternPulse(game) {

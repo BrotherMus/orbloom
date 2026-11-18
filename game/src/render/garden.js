@@ -1,6 +1,6 @@
 // The little world and what grows on it: the planet, its twelve plots and every plant.
 
-import { COLORS, MAX_LEVEL, PLANET, SEEDS, TAU } from '../config.js';
+import { COLORS, MAX_LEVEL, PLANET, SEEDS, TAU, watchOf } from '../config.js';
 import { isTended, plantHeight, plantTip, upgradeCost } from '../plants.js';
 import { bar, glowDot, write } from './brush.js';
 
@@ -11,9 +11,11 @@ const PATCHES = [
 export function drawPlanet(ctx, game) {
   const { x, y, radius } = PLANET;
   glowDot(ctx, x, y, radius * 2.1, 'rgba(67, 224, 184, 0.30)');
+  // The little world takes a little of each watch's light: teal at dusk, icy in the frost, warm near dawn.
+  const watch = watchOf(game.night);
   const body = ctx.createRadialGradient(x - 38, y - 48, 10, x, y, radius);
-  body.addColorStop(0, COLORS.planetLight);
-  body.addColorStop(1, COLORS.planetDark);
+  body.addColorStop(0, watch.planetLight);
+  body.addColorStop(1, watch.planetDark);
   ctx.fillStyle = body;
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, TAU);

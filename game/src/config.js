@@ -71,6 +71,37 @@ export const GLOAM = {
 };
 export const BOSS_NIGHTS = [6, 12];
 
+// The long night passes through three watches of four nights, each with its own sky and its own rule.
+export const WATCHES = [
+  {
+    name: 'Dusk Watch', tint: '#b79bff', lore: 'still air: the Gloam come as they are',
+    skyTop: '#060a1c', skyBottom: '#1b1547', haze: 'rgba(139, 77, 255, 0.20)', planetLight: '#43e0b8', planetDark: '#0d4f5e',
+    speed: 1, health: 1, dew: 0,
+  },
+  {
+    name: 'Frost Watch', tint: '#9be7ff', lore: 'bitter cold: the Gloam are slower but tougher',
+    skyTop: '#03101d', skyBottom: '#0f3a5c', haze: 'rgba(120, 220, 255, 0.20)', planetLight: '#8fe9e0', planetDark: '#155a78',
+    speed: 0.86, health: 1.25, dew: 0,
+  },
+  {
+    name: 'Ember Watch', tint: '#ff9f5a', lore: 'burning winds: the Gloam are faster and drop more dew',
+    skyTop: '#16050f', skyBottom: '#4d1733', haze: 'rgba(255, 110, 90, 0.22)', planetLight: '#7fe3a0', planetDark: '#1d5a4c',
+    speed: 1.14, health: 1, dew: 1,
+  },
+];
+export const DAWN_SKY = { skyTop: '#2b1a55', skyBottom: '#ff9f5a', haze: 'rgba(255, 209, 102, 0.30)' };
+
+export function watchOf(night) {
+  return WATCHES[Math.min(WATCHES.length - 1, Math.floor((Math.max(1, night) - 1) / 4))];
+}
+
+// Difficulty: chosen on the title screen, it scales the Gloam, the starting dew and the score.
+export const DIFFICULTIES = [
+  { id: 'gentle', name: 'Gentle', health: 0.75, speed: 0.92, dew: 110, score: 0.75, lore: 'softer Gloam, more dew, ×0.75 score' },
+  { id: 'wild', name: 'Wild', health: 1, speed: 1, dew: START_DEW, score: 1, lore: 'the garden as it was meant to be' },
+  { id: 'starless', name: 'Starless', health: 1.3, speed: 1.1, dew: 70, score: 1.5, lore: 'tougher, faster Gloam, ×1.5 score' },
+];
+
 export const GARDENER = {
   walkSpeed: 2.3, // radians per second around the planet
   reach: 0.24, // how far along the surface the dew basket reaches, in radians

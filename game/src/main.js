@@ -1,17 +1,17 @@
 // Orbloom's entry point: sets up the canvas, reads input, runs the fixed-step loop and draws each frame.
 
-import { PLANET, SEED_ORDER, VIEW } from './config.js';
+import { DIFFICULTIES, PLANET, SEED_ORDER, VIEW } from './config.js';
 import { nearestPlot, toPolar } from './geometry.js';
 import { createGame } from './state.js';
 import { createInput, drainInput, walkDirection } from './input.js';
 import { playSound, setMuted, unlockAudio } from './audio.js';
-import { loadBest, saveBest } from './storage.js';
+import { loadBest, loadDifficultyId, saveBest, saveDifficultyId } from './storage.js';
 import { chooseBoon, startRun, stepGame } from './simulation.js';
 import { startDemo, stepDemo } from './demo.js';
 import { plantSeed, upgradePlant, uprootPlant } from './plants.js';
 import { drawFrame } from './render/scene.js';
 import { seedCardRects } from './render/hud.js';
-import { boonCardRects } from './render/screens.js';
+import { boonCardRects, difficultyPillRects } from './render/screens.js';
 import { shotRequest, stageShot } from './shots.js';
 import { seedRandom } from './rng.js';
 
@@ -22,6 +22,7 @@ const ctx = canvas.getContext('2d');
 const game = createGame();
 const input = createInput(canvas);
 let pulseQueued = false;
+let songQueued = false;
 let modeClock = 0;
 let lastMode = '';
 
@@ -65,10 +66,13 @@ function onKey(key) {
   }
   if (game.mode === 'title') {
     if (key === 'Enter' || key === ' ') beginRun();
+    else if (key === 'ArrowLeft' || key === 'a') chooseDifficulty(DIFFICULTIES.indexOf(game.difficulty) - 1);
+    else if (key === 'ArrowRight' || key === 'd') chooseDifficulty(DIFFICULTIES.indexOf(game.difficulty) + 1);
   } else if (game.mode === 'playing') {
     const seedIndex = Number(key) - 1;
     if (seedIndex >= 0 && seedIndex < SEED_ORDER.length) game.selectedSeed = SEED_ORDER[seedIndex];
     else if (key === ' ') pulseQueued = true;
+    else if (key === 'e') songQueued = true;
     else if (key === 'p' || key === 'Escape') game.mode = 'paused';
     else if (key === 'x' && game.hoverPlot >= 0) uprootPlant(game, game.hoverPlot);
   } else if (game.mode === 'paused') {
@@ -82,9 +86,18 @@ function onKey(key) {
   }
 }
 
+// Difficulty is picked on the title screen and remembered for next time.
+function chooseDifficulty(index) {
+  game.difficulty = DIFFICULTIES[Math.max(0, Math.min(DIFFICULTIES.length - 1, index))];
+  saveDifficultyId(game.difficulty.id);
+  playSound('plant');
+}
+
 function onClick(click) {
   if (game.mode === 'title') {
-    beginRun();
+    const pill = difficultyPillRects().find((box) => inside(click, box));
+    if (pill) chooseDifficulty(DIFFICULTIES.indexOf(pill.difficulty));
+    else beginRun();
   } else if (game.mode === 'playing') {
     const card = seedCardRects().find((box) => inside(click, box));
     if (card) {
@@ -122,8 +135,9 @@ function frame(now) {
     owed -= STEP;
     if (game.mode === 'title') stepDemo(game, STEP);
     else if (game.mode !== 'paused') {
-      stepGame(game, { walk: walkDirection(input), pulse: pulseQueued || input.held.has(' ') }, STEP);
+      stepGame(game, { walk: walkDirection(input), pulse: pulseQueued || input.held.has(' '), song: songQueued }, STEP);
       pulseQueued = false;
+      songQueued = false;
     }
     modeClock = game.mode === lastMode ? modeClock + STEP : 0;
     if (game.mode !== lastMode) onModeChange();
@@ -159,6 +173,7 @@ if (shot) {
   }
 } else {
   game.best = loadBest();
+  game.difficulty = DIFFICULTIES.find((difficulty) => difficulty.id === loadDifficultyId()) ?? DIFFICULTIES[1];
   seedRandom(Date.now());
   startDemo(game);
   requestAnimationFrame(frame);

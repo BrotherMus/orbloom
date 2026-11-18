@@ -1,10 +1,10 @@
 // The whole game in one plain object: created once, reset for every new run.
 
-import { PLANET, START_DEW } from './config.js';
+import { DIFFICULTIES, PLANET } from './config.js';
 import { plotAngle } from './geometry.js';
 
 export function createGame() {
-  const game = { mode: 'title', best: 0, muted: false, sound: () => {} };
+  const game = { mode: 'title', best: 0, muted: false, difficulty: DIFFICULTIES[1], sound: () => {} };
   resetRun(game);
   return game;
 }
@@ -15,11 +15,11 @@ export function resetRun(game) {
   game.score = 0;
   game.combo = 0;
   game.comboTimer = 0;
-  game.dew = START_DEW;
+  game.dew = game.difficulty.dew;
   game.health = PLANET.startHealth;
   game.maxHealth = PLANET.startHealth;
   game.plots = Array.from({ length: PLANET.plotCount }, (_, index) => ({ index, angle: plotAngle(index), plant: null }));
-  game.gardener = { angle: -Math.PI / 2, facing: 1, stride: 0, pulseTimer: 0, walking: false };
+  game.gardener = { angle: -Math.PI / 2, facing: 1, stride: 0, pulseTimer: 0, songTimer: 0, walking: false };
   game.enemies = [];
   game.thorns = [];
   game.embers = [];
@@ -43,7 +43,7 @@ export function resetRun(game) {
 }
 
 export function addScore(game, points) {
-  game.score += Math.round(points * (1 + game.combo * 0.1));
+  game.score += Math.round(points * (1 + game.combo * 0.1) * game.difficulty.score);
 }
 
 export function showBanner(game, text, sub = '') {

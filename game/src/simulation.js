@@ -36,9 +36,9 @@ export function stepGame(game, controls, dt) {
 
 function endNight(game) {
   game.stats.nights = game.night;
-  game.score += game.night * 100;
+  game.score += Math.round(game.night * 100 * game.difficulty.score);
   if (game.night >= NIGHTS) {
-    game.score += game.health * 50;
+    game.score += Math.round(game.health * 50 * game.difficulty.score);
     finishRun(game, 'won');
     return;
   }

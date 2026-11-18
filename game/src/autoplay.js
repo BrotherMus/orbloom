@@ -36,7 +36,11 @@ export function robotControls(game) {
   }
   const from = gardenerPosition(game);
   const close = game.enemies.filter((enemy) => distanceBetween(from, enemyPosition(enemy)) < GARDENER.pulseRange * 0.8);
-  return { walk, pulse: close.length >= 2 || close.some((enemy) => enemy.chewing >= 0 || enemy.breed.size > 20) };
+  return {
+    walk,
+    pulse: close.length >= 2 || close.some((enemy) => enemy.chewing >= 0 || enemy.breed.size > 20),
+    song: game.dewDrops.length >= 5 || game.enemies.length >= 14,
+  };
 }
 
 // Spend dew the way a sensible player might: guard the front under attack, keep some Sunpetals, then upgrade.

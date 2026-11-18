@@ -1,8 +1,8 @@
 // The heads-up display during play: night, world heart, score and combo, dew, the seed bar and the lantern.
 
-import { BOSS_NIGHTS, COLORS, NIGHTS, PLANET, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { BOSS_NIGHTS, COLORS, NIGHTS, PLANET, SEEDS, SEED_ORDER, VIEW, watchOf } from '../config.js';
 import { BOONS, boonTint } from '../boons.js';
-import { pulseCooldown } from '../gardener.js';
+import { SONG_COOLDOWN, pulseCooldown } from '../gardener.js';
 import { newThreat, nightName, nightProgress } from '../waves.js';
 import { bar, glowDot, panel, write } from './brush.js';
 import { drawSeedIcon } from './garden.js';
@@ -28,7 +28,7 @@ export function drawHud(ctx, game) {
   drawBossBar(ctx, game);
   drawBanner(ctx, game);
   if (game.mode === 'playing') {
-    write(ctx, 'A / D walk  ·  SPACE lantern  ·  click a plot to plant or grow  ·  right-click uproots  ·  P pause  ·  M mute', VIEW.width / 2, 694, { size: 14, align: 'center', color: COLORS.dim });
+    write(ctx, 'A / D walk  ·  SPACE lantern  ·  E dew song  ·  click a plot to plant or grow  ·  right-click uproots  ·  P pause  ·  M mute', VIEW.width / 2, 694, { size: 14, align: 'center', color: COLORS.dim });
   }
 }
 
@@ -75,9 +75,10 @@ function drawCoach(ctx, game) {
 
 function drawNightPanel(ctx, game) {
   panel(ctx, 20, 16, 300, 104);
-  write(ctx, `NIGHT ${game.night}`, 38, 44, { size: 30, weight: 800, color: COLORS.ice, spacing: 1 });
-  write(ctx, `of ${NIGHTS}`, 302, 40, { size: 18, align: 'right', color: COLORS.dim });
-  write(ctx, nightName(game.night), 302, 62, { size: 15, align: 'right', color: COLORS.nova });
+  write(ctx, `NIGHT ${game.night}/${NIGHTS}`, 38, 46, { size: 25, weight: 800, color: COLORS.ice });
+  const watch = watchOf(game.night);
+  write(ctx, watch.name, 302, 36, { size: 15, weight: 800, align: 'right', color: watch.tint });
+  write(ctx, nightName(game.night), 302, 58, { size: 13, align: 'right', color: COLORS.dim });
   bar(ctx, 38, 78, 264, 9, nightProgress(game), COLORS.ice);
   drawNightPips(ctx, game);
   drawBoonRow(ctx, game);
@@ -94,7 +95,7 @@ function drawHeartPanel(ctx, game) {
 
 function drawScorePanel(ctx, game) {
   panel(ctx, 960, 16, 300, 86);
-  write(ctx, 'SCORE', 978, 38, { size: 15, weight: 700, color: COLORS.dim, spacing: 2 });
+  write(ctx, `SCORE · ${game.difficulty.name.toUpperCase()}`, 978, 38, { size: 14, weight: 700, color: COLORS.dim, spacing: 1 });
   write(ctx, game.score.toLocaleString('en-US'), 1242, 42, { size: 30, weight: 800, align: 'right', color: COLORS.gold });
   if (game.combo > 1) write(ctx, `COMBO ×${game.combo}`, 978, 78, { size: 19, weight: 800, color: COLORS.nova, glow: COLORS.nova });
   else write(ctx, 'chain kills for a combo', 978, 78, { size: 14, color: COLORS.dim });
@@ -133,11 +134,20 @@ function drawSeedBar(ctx, game) {
 function drawLanternPanel(ctx, game) {
   const x = VIEW.width - 20 - SIDE_PANEL;
   panel(ctx, x, CARD.y, SIDE_PANEL, CARD.height);
-  const ready = game.gardener.pulseTimer <= 0;
-  glowDot(ctx, x + 36, CARD.y + 37, ready ? 28 : 12, COLORS.gold, ready ? 0.9 : 0.4);
-  write(ctx, 'LANTERN', x + 66, CARD.y + 22, { size: 15, weight: 700, color: COLORS.dim, spacing: 2 });
-  write(ctx, ready ? 'SPACE · ready!' : 'recharging…', x + 66, CARD.y + 44, { size: 18, weight: 800, color: ready ? COLORS.gold : COLORS.dim });
-  bar(ctx, x + 66, CARD.y + 58, 140, 6, 1 - game.gardener.pulseTimer / pulseCooldown(game), COLORS.gold);
+  // Pip's two gifts, one row each: the lantern pulse on SPACE and the Dew Song on E.
+  const gifts = [
+    { key: 'SPACE', name: 'Lantern', color: COLORS.gold, left: game.gardener.pulseTimer, full: pulseCooldown(game) },
+    { key: 'E', name: 'Dew Song', color: COLORS.leaf, left: game.gardener.songTimer, full: SONG_COOLDOWN },
+  ];
+  gifts.forEach((gift, row) => {
+    const y = CARD.y + 21 + row * 33;
+    const ready = gift.left <= 0;
+    glowDot(ctx, x + 22, y, ready ? 17 : 8, gift.color, ready ? 0.9 : 0.4);
+    panel(ctx, x + 40, y - 11, 52, 22, { fill: 'rgba(155, 231, 255, 0.12)', radius: 6, edge: null });
+    write(ctx, gift.key, x + 66, y + 1, { size: 12, weight: 800, align: 'center', color: COLORS.ice });
+    write(ctx, gift.name, x + 100, y - 4, { size: 15, weight: 800, color: ready ? gift.color : COLORS.dim });
+    bar(ctx, x + 100, y + 8, 110, 5, 1 - gift.left / gift.full, gift.color);
+  });
 }
 
 // The boons gathered so far, as a row of little tinted badges under the night panel.
@@ -187,4 +197,6 @@ function drawBanner(ctx, game) {
   write(ctx, game.banner.sub, VIEW.width / 2, 216, { size: 22, align: 'center', color: COLORS.nova, alpha, spacing: 2 });
   const threat = newThreat(game.night);
   if (threat) write(ctx, `New tonight: ${threat.name} — ${threat.lore}`, VIEW.width / 2, 250, { size: 18, align: 'center', color: COLORS.ink, alpha });
+  const watch = watchOf(game.night);
+  if (game.night % 4 === 1) write(ctx, `${watch.name} begins — ${watch.lore}`, VIEW.width / 2, 280, { size: 18, weight: 700, align: 'center', color: watch.tint, alpha });
 }

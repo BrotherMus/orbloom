@@ -1,6 +1,6 @@
 // Full-screen layers over the garden: the title, the boon choice, the pause veil and the results.
 
-import { BOSS_NIGHTS, COLORS, NIGHTS, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { BOSS_NIGHTS, COLORS, DIFFICULTIES, NIGHTS, SEEDS, SEED_ORDER, VIEW, WATCHES, watchOf } from '../config.js';
 import { boonTint } from '../boons.js';
 import { gardenerRank } from '../simulation.js';
 import { newThreat, nightName } from '../waves.js';
@@ -26,31 +26,42 @@ function logo(ctx, y, size) {
 export function drawTitle(ctx, game) {
   veil(ctx, 0.38);
   logo(ctx, 112, 118);
-  write(ctx, 'Grow a garden on a tiny world. Hold back the Gloam for twelve nights.', MIDDLE, 198, { size: 24, align: 'center', color: COLORS.ink });
+  write(ctx, 'Grow a garden on a tiny world. Hold back the Gloam for twelve nights.', MIDDLE, 194, { size: 24, align: 'center', color: COLORS.ink });
+  write(ctx, 'Three watches · six seeds · sixteen boons · six kinds of Gloam · two Eclipses', MIDDLE, 224, { size: 16, align: 'center', color: COLORS.dim });
 
-  panel(ctx, 40, 262, 380, 390);
-  write(ctx, 'HOW TO PLAY', 64, 296, { size: 20, weight: 800, color: COLORS.gold, spacing: 3 });
+  for (const pill of difficultyPillRects()) {
+    const chosen = pill.difficulty === game.difficulty;
+    panel(ctx, pill.x, pill.y, pill.width, pill.height, {
+      fill: chosen ? 'rgba(54, 40, 12, 0.94)' : COLORS.panel, edge: chosen ? COLORS.gold : COLORS.panelEdge, radius: 16, line: chosen ? 2.5 : 1.5,
+    });
+    write(ctx, pill.difficulty.name.toUpperCase(), pill.x + pill.width / 2, pill.y + pill.height / 2 + 1, {
+      size: 15, weight: 800, align: 'center', color: chosen ? COLORS.gold : COLORS.dim, spacing: 2,
+    });
+  }
+
+  panel(ctx, 40, 300, 380, 352);
+  write(ctx, 'HOW TO PLAY', 64, 330, { size: 20, weight: 800, color: COLORS.gold, spacing: 3 });
   const steps = [
-    ['CLICK', 'a plot to plant the chosen seed'],
-    ['CLICK', 'a plant again to grow it (3 levels)'],
+    ['CLICK', 'a plot to plant; click again to grow'],
     ['1 – 6', 'choose a seed · right-click uproots'],
     ['A / D', 'walk Pip around the world'],
     ['SPACE', 'swing the lantern: a shock pulse'],
+    ['E', 'dew song: gather all, rouse all'],
     ['GOAL', 'gather dew, guard the world heart'],
     ['WIN', `survive all ${NIGHTS} nights to see dawn`],
   ];
   steps.forEach(([key, text], index) => {
-    const y = 340 + index * 43;
+    const y = 372 + index * 40;
     panel(ctx, 64, y - 15, 74, 30, { fill: 'rgba(155, 231, 255, 0.12)', radius: 8 });
     write(ctx, key, 101, y, { size: 15, weight: 800, align: 'center', color: COLORS.ice });
     write(ctx, text, 150, y, { size: 16, color: COLORS.ink });
   });
 
-  panel(ctx, 860, 262, 380, 390);
-  write(ctx, 'YOUR SEEDS', 884, 296, { size: 20, weight: 800, color: COLORS.gold, spacing: 3 });
+  panel(ctx, 860, 300, 380, 352);
+  write(ctx, 'YOUR SEEDS', 884, 330, { size: 20, weight: 800, color: COLORS.gold, spacing: 3 });
   SEED_ORDER.forEach((kind, index) => {
     const seed = SEEDS[kind];
-    const y = 344 + index * 54;
+    const y = 374 + index * 50;
     drawSeedIcon(ctx, kind, 912, y, 0.95);
     write(ctx, `${seed.name}`, 950, y - 10, { size: 18, weight: 800, color: seed.color });
     write(ctx, `${seed.cost} dew`, 1216, y - 10, { size: 14, align: 'right', color: COLORS.dim });
@@ -60,7 +71,16 @@ export function drawTitle(ctx, game) {
   const pulse = 0.85 + 0.15 * Math.sin(game.time * 4);
   panel(ctx, MIDDLE - 250, 684, 500, 58, { fill: 'rgba(54, 40, 12, 0.94)', edge: COLORS.gold, radius: 29, line: 2.5 });
   write(ctx, 'CLICK or press ENTER to begin', MIDDLE, 714, { size: 26, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold });
-  write(ctx, game.best > 0 ? `Best garden: ${game.best.toLocaleString('en-US')} points` : 'Twelve nights · six seeds · sixteen boons · six kinds of Gloam · two Eclipses', MIDDLE, 768, { size: 17, align: 'center', color: COLORS.dim });
+  const best = game.best > 0 ? `   ·   best garden ${game.best.toLocaleString('en-US')}` : '';
+  write(ctx, `${game.difficulty.name}: ${game.difficulty.lore}   ·   ← → or click to change${best}`, MIDDLE, 768, { size: 16, align: 'center', color: COLORS.dim });
+}
+
+// The three difficulty pills on the title screen, as clickable boxes.
+export function difficultyPillRects() {
+  const width = 150;
+  const gap = 12;
+  const left = MIDDLE - (DIFFICULTIES.length * width + (DIFFICULTIES.length - 1) * gap) / 2;
+  return DIFFICULTIES.map((difficulty, index) => ({ difficulty, x: left + index * (width + gap), y: 248, width, height: 34 }));
 }
 
 export function boonCardRects() {
@@ -121,10 +141,14 @@ function drawNightPath(ctx, game) {
     ctx.stroke();
     write(ctx, String(night), x, y + 1, { size: 13, weight: 800, align: 'center', color: done ? '#2b1d4a' : boss ? COLORS.eye : COLORS.dim });
   }
+  WATCHES.forEach((watch, index) => {
+    write(ctx, watch.name.toUpperCase(), left + (index * 4 + 1.5) * spacing, y - 26, { size: 12, weight: 800, align: 'center', color: watch.tint, spacing: 2 });
+  });
   write(ctx, 'DUSK', left - 44, y, { size: 13, weight: 800, align: 'center', color: COLORS.dim, spacing: 2 });
   write(ctx, 'DAWN', left + (NIGHTS - 1) * spacing + 46, y, { size: 13, weight: 800, align: 'center', color: COLORS.gold, spacing: 2 });
   const threat = newThreat(game.night + 1);
-  const intel = threat ? `  ·  new: ${threat.name}, ${threat.lore}` : '';
+  const upcoming = watchOf(game.night + 1);
+  const intel = threat ? `  ·  new: ${threat.name}, ${threat.lore}` : game.night % 4 === 0 ? `  ·  ${upcoming.name}: ${upcoming.lore}` : '';
   write(ctx, `Next — night ${game.night + 1}: ${nightName(game.night + 1)}${intel}`, MIDDLE, 672, { size: 17, weight: 700, align: 'center', color: COLORS.nova });
 }
 
@@ -136,7 +160,7 @@ export function drawPause(ctx) {
 
 export function drawResults(ctx, game) {
   const won = game.mode === 'won';
-  veil(ctx, 0.66);
+  veil(ctx, won ? 0.42 : 0.66);
   if (won) glowDot(ctx, MIDDLE, 860, 640, 'rgba(255, 190, 90, 0.55)');
   const tint = won ? COLORS.gold : COLORS.danger;
   write(ctx, won ? 'DAWN BREAKS' : 'THE GARDEN FELL', MIDDLE, 108, { size: 84, weight: 800, align: 'center', color: tint, spacing: 8, glow: tint });
@@ -155,10 +179,12 @@ export function drawResults(ctx, game) {
     ['Dew gathered', String(game.stats.dewGathered)],
     ['Boons taken', String(game.boons.taken.length)],
     ['World heart', `${Math.ceil(game.health)} / ${game.maxHealth}`],
+    ['Watch reached', watchOf(game.night).name],
+    ['Difficulty', `${game.difficulty.name} ×${game.difficulty.score}`],
   ];
   stats.forEach(([label, value], index) => {
     const x = MIDDLE - 290 + (index % 2) * 300;
-    const y = 458 + Math.floor(index / 2) * 42;
+    const y = 450 + Math.floor(index / 2) * 36;
     write(ctx, label, x, y, { size: 19, color: COLORS.dim });
     write(ctx, value, x + 270, y, { size: 21, weight: 800, align: 'right', color: COLORS.ink });
   });

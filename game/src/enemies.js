@@ -1,6 +1,6 @@
 // The Gloam: how each creature falls toward the garden, bites it, chews plants and dies.
 
-import { COLORS, COMBO_WINDOW, DEW_LIFETIME, GLOAM, PLANET, SEEDS, SPAWN_DISTANCE } from './config.js';
+import { COLORS, COMBO_WINDOW, DEW_LIFETIME, GLOAM, PLANET, SEEDS, SPAWN_DISTANCE, watchOf } from './config.js';
 import { angleDiff, distanceBetween, nearestPlot, toScreen } from './geometry.js';
 import { randomRange } from './rng.js';
 import { addScore } from './state.js';
@@ -11,7 +11,8 @@ export function spawnEnemy(game, kind, angle, distance = SPAWN_DISTANCE) {
   const breed = GLOAM[kind];
   // The Gloam hardens slowly at first, then steeply once the garden is full grown.
   const toughness = 1 + (game.night - 1) * 0.22 + Math.max(0, game.night - 6) ** 2 * 0.2;
-  const health = Math.ceil(breed.health * toughness * (kind === 'eclipse' && game.night > 6 ? 2.1 : 1));
+  const scale = toughness * watchOf(game.night).health * game.difficulty.health;
+  const health = Math.ceil(breed.health * scale * (kind === 'eclipse' && game.night > 6 ? 2.1 : 1));
   const enemy = {
     kind, breed, angle, distance, health, maxHealth: health,
     age: randomRange(0, 6), slow: 0, hitFlash: 0, broodTimer: breed.broods ?? 0, chewing: -1,
@@ -55,7 +56,7 @@ export function updateEnemies(game, dt) {
       chewPlant(game, enemy, dt);
       continue;
     }
-    const pace = breed.speed * (1 - enemy.slow) * dt;
+    const pace = breed.speed * watchOf(game.night).speed * game.difficulty.speed * (1 - enemy.slow) * dt;
     enemy.distance -= pace;
     if (breed.weave) enemy.angle += Math.cos(enemy.age * 3.1) * breed.weave * dt * 0.5;
     else if (breed.orbit) enemy.angle += breed.orbit * dt * (1 - enemy.slow * 0.5);
@@ -135,7 +136,7 @@ export function damageEnemy(game, enemy, amount, quiet = false) {
   ring(game, at.x, at.y, breed.size * 2.4, COLORS.gloamEdge, 0.4);
   floater(game, at.x, at.y - breed.size, `+${Math.round(breed.score * (1 + game.combo * 0.1))}`, COLORS.ink);
   game.dewDrops.push({
-    angle: enemy.angle, distance: enemy.distance, value: Math.round(breed.dew * game.boons.dewGain),
+    angle: enemy.angle, distance: enemy.distance, value: Math.round((breed.dew + watchOf(game.night).dew) * game.boons.dewGain),
     life: DEW_LIFETIME, resting: false,
   });
   if (breed.splits) {

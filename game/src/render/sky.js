@@ -1,6 +1,6 @@
 // The night sky behind everything: a deep gradient, drifting nebulae and twinkling stars.
 
-import { COLORS, PLANET, TAU, VIEW } from '../config.js';
+import { COLORS, DAWN_SKY, PLANET, TAU, VIEW, watchOf } from '../config.js';
 
 // Stars are laid out once from their own tiny generator, so they never disturb the game's random seed.
 const STARS = [];
@@ -46,20 +46,36 @@ function drawFarMoons(ctx, game) {
   ctx.restore();
 }
 
+// The sky belongs to the watch being played; when the garden wins, dawn takes it over.
+export function skyOf(game) {
+  return game.mode === 'won' ? DAWN_SKY : watchOf(game.night);
+}
+
+function drawSunrise(ctx) {
+  const sun = ctx.createRadialGradient(VIEW.width / 2, VIEW.height + 40, 20, VIEW.width / 2, VIEW.height + 40, 620);
+  sun.addColorStop(0, 'rgba(255, 246, 201, 0.95)');
+  sun.addColorStop(0.35, 'rgba(255, 209, 102, 0.55)');
+  sun.addColorStop(1, 'rgba(255, 159, 90, 0)');
+  ctx.fillStyle = sun;
+  ctx.fillRect(0, 0, VIEW.width, VIEW.height);
+}
+
 export function drawSky(ctx, game) {
+  const palette = skyOf(game);
   const sky = ctx.createLinearGradient(0, 0, 0, VIEW.height);
-  sky.addColorStop(0, COLORS.skyTop);
-  sky.addColorStop(1, COLORS.skyBottom);
+  sky.addColorStop(0, palette.skyTop);
+  sky.addColorStop(1, palette.skyBottom);
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, VIEW.width, VIEW.height);
+  if (game.mode === 'won') drawSunrise(ctx);
 
-  for (const cloud of NEBULAE) {
+  NEBULAE.forEach((cloud, index) => {
     const haze = ctx.createRadialGradient(cloud.x, cloud.y, 0, cloud.x, cloud.y, cloud.radius);
-    haze.addColorStop(0, cloud.color);
+    haze.addColorStop(0, index === 0 ? palette.haze : cloud.color);
     haze.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = haze;
     ctx.fillRect(cloud.x - cloud.radius, cloud.y - cloud.radius, cloud.radius * 2, cloud.radius * 2);
-  }
+  });
 
   for (const star of STARS) {
     const twinkle = 0.45 + 0.55 * Math.abs(Math.sin(game.time * 0.9 + star.phase));

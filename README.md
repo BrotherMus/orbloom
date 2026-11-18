@@ -18,9 +18,11 @@
 | Right-click / `X` | Uproot a plant for half its dew |
 | `A` / `D` or arrows | Walk Pip around the world; plants beside Pip work faster |
 | `Space` | Lantern pulse: damages and knocks back nearby Gloam |
+| `E` | Dew Song: gathers every fallen dew drop and makes every plant act at once |
+| `←` / `→` on the title | Choose Gentle, Wild or Starless difficulty |
 | `P`, `M`, `R` | Pause, mute, restart |
 
-You win by surviving all twelve nights; you lose when the world heart runs out. Chain kills for a combo, and beat your best score.
+You win by surviving all twelve nights; you lose when the world heart runs out. The night passes through three watches (Dusk, Frost, Ember), each with its own sky and its own rule. Chain kills for a combo, and beat your best score.
 
 ## Run it
 
