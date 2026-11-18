@@ -66,8 +66,8 @@ function onKey(key) {
   if (game.mode === 'title') {
     if (key === 'Enter' || key === ' ') beginRun();
   } else if (game.mode === 'playing') {
-    const seedIndex = ['1', '2', '3', '4'].indexOf(key);
-    if (seedIndex >= 0) game.selectedSeed = SEED_ORDER[seedIndex];
+    const seedIndex = Number(key) - 1;
+    if (seedIndex >= 0 && seedIndex < SEED_ORDER.length) game.selectedSeed = SEED_ORDER[seedIndex];
     else if (key === ' ') pulseQueued = true;
     else if (key === 'p' || key === 'Escape') game.mode = 'paused';
     else if (key === 'x' && game.hoverPlot >= 0) uprootPlant(game, game.hoverPlot);

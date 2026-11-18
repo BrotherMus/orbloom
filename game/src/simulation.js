@@ -5,7 +5,7 @@ import { resetRun, showBanner } from './state.js';
 import { updateEffects } from './effects.js';
 import { updateEnemies } from './enemies.js';
 import { updateDew, updateGardener } from './gardener.js';
-import { updatePlants, updateThorns } from './plants.js';
+import { updateEmbers, updatePlants, updateThorns } from './plants.js';
 import { startNight, updateWave } from './waves.js';
 import { rollBoons, takeBoon } from './boons.js';
 
@@ -23,6 +23,7 @@ export function stepGame(game, controls, dt) {
   updateGardener(game, controls, dt);
   updatePlants(game, dt);
   updateThorns(game, dt);
+  updateEmbers(game, dt);
   updateEnemies(game, dt);
   updateDew(game, dt);
   updateEffects(game, dt);

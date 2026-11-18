@@ -49,8 +49,16 @@ export const SEEDS = {
     key: '4', name: 'Novalily', blurb: 'Charges up, then bursts in a ring', cost: 60, color: COLORS.nova,
     radius: [150, 170, 195], damage: [5, 8, 12], interval: [3.6, 3.2, 2.8], health: [5, 7, 9],
   },
+  ember: {
+    key: '5', name: 'Emberpod', blurb: 'Lobs fire that bursts on tough Gloam', cost: 50, color: COLORS.ember,
+    range: [400, 430, 460], damage: [3, 5, 8], splash: [62, 72, 84], interval: [2.4, 2.1, 1.8], health: [5, 7, 9],
+  },
+  bell: {
+    key: '6', name: 'Moonbell', blurb: 'Mends the heart, quickens neighbours', cost: 45, color: '#c9b8ff',
+    mend: [1, 1, 2], haste: [0.25, 0.35, 0.5], interval: [8, 7, 7], health: [4, 6, 8],
+  },
 };
-export const SEED_ORDER = ['thorn', 'sun', 'frost', 'nova'];
+export const SEED_ORDER = ['thorn', 'sun', 'frost', 'nova', 'ember', 'bell'];
 
 // The Gloam: every creature that falls on the garden. threat is its price in a night's budget.
 export const GLOAM = {

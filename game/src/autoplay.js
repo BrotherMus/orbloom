@@ -6,6 +6,8 @@ import { enemyPosition } from './enemies.js';
 import { gardenerPosition } from './gardener.js';
 import { plantSeed, upgradeCost, upgradePlant } from './plants.js';
 
+const PLANTING_ORDER = ['thorn', 'sun', 'thorn', 'frost', 'sun', 'thorn', 'nova', 'ember', 'thorn', 'bell', 'sun', 'ember'];
+
 // Where the robot wants to stand: the nearest resting dew, else under the lowest creature.
 function goalAngle(game) {
   const pip = game.gardener;
@@ -40,9 +42,8 @@ export function robotControls(game) {
 // Spend dew the way a sensible player might: guard the front under attack, keep some Sunpetals, then upgrade.
 export function robotGardening(game) {
   const planted = game.plots.filter((plot) => plot.plant);
-  const suns = planted.filter((plot) => plot.plant.kind === 'sun').length;
-  const want = suns < Math.min(3, 1 + Math.floor(planted.length / 3)) ? 'sun'
-    : planted.length % 5 === 3 ? 'frost' : planted.length % 5 === 4 ? 'nova' : 'thorn';
+  // A planting order that mixes every seed: thorns first, dew early, then the specialists.
+  const want = PLANTING_ORDER[planted.length % PLANTING_ORDER.length];
   if (planted.length < game.plots.length && game.dew >= SEEDS[want].cost) {
     let target = null;
     for (const enemy of game.enemies) if (!target || enemy.distance < target.distance) target = enemy;

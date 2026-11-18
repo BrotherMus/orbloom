@@ -121,6 +121,8 @@ function drawPlant(ctx, game, plot, hovered) {
     if (plant.kind === 'thorn') drawThornbud(ctx, plant, plot);
     else if (plant.kind === 'sun') drawSunpetal(ctx, game);
     else if (plant.kind === 'frost') drawFrostfern(ctx, game);
+    else if (plant.kind === 'ember') drawEmberpod(ctx, plant, game);
+    else if (plant.kind === 'bell') drawMoonbell(ctx, plant, game);
     else drawNovalily(ctx, plant);
   });
 
@@ -141,7 +143,7 @@ function drawPlant(ctx, game, plot, hovered) {
     const label = plant.level >= MAX_LEVEL ? `${seed.name} · full grown` : `Grow ${seed.name} · ${upgradeCost(plant)} dew`;
     const affordable = plant.level >= MAX_LEVEL || game.dew >= upgradeCost(plant);
     write(ctx, label, tip.x, tip.y - 44, { size: 17, align: 'center', color: affordable ? seed.color : COLORS.danger, glow: '#000' });
-    const reach = plant.kind === 'thorn' ? seed.range[plant.level - 1] : plant.kind === 'frost' ? seed.range[plant.level - 1] : plant.kind === 'nova' ? seed.radius[plant.level - 1] : 0;
+    const reach = seed.range ? seed.range[plant.level - 1] : seed.radius ? seed.radius[plant.level - 1] : 0;
     if (reach) {
       ctx.strokeStyle = seed.color;
       ctx.globalAlpha = 0.35;
@@ -252,6 +254,51 @@ function drawNovalily(ctx, plant) {
   glowDot(ctx, 0, 0, 14 + charge * 20, COLORS.nova, 0.35 + charge * 0.4);
 }
 
+// A squat orange pod with a smouldering mouth; it swells as its next ember is nearly ready.
+function drawEmberpod(ctx, plant, game) {
+  const charge = 1 - Math.max(0, plant.timer) / SEEDS.ember.interval[plant.level - 1];
+  ctx.fillStyle = '#b5532a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 13, 15, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = COLORS.ember;
+  for (const rib of [-7, 0, 7]) {
+    ctx.beginPath();
+    ctx.ellipse(rib, 1, 3.2, 12, 0, 0, TAU);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#2b0f08';
+  ctx.beginPath();
+  ctx.ellipse(0, -11, 8, 4.5, 0, 0, TAU);
+  ctx.fill();
+  glowDot(ctx, 0, -11, 9 + charge * 14 + Math.sin(game.time * 9) * 1.5, COLORS.gold, 0.5 + charge * 0.4);
+}
+
+// A drooping pale bell on a hooked stalk, with a soft halo that swells when it rings.
+function drawMoonbell(ctx, plant, game) {
+  const sway = Math.sin(game.time * 2.4) * 0.12 + plant.recoil * 0.5;
+  ctx.rotate(sway);
+  ctx.strokeStyle = COLORS.leaf;
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 6);
+  ctx.quadraticCurveTo(0, -14, 10, -10);
+  ctx.stroke();
+  ctx.fillStyle = '#c9b8ff';
+  ctx.beginPath();
+  ctx.moveTo(10, -12);
+  ctx.quadraticCurveTo(24, -8, 22, 8);
+  ctx.lineTo(-2, 8);
+  ctx.quadraticCurveTo(-4, -8, 10, -12);
+  ctx.fill();
+  ctx.fillStyle = '#fff6c9';
+  ctx.beginPath();
+  ctx.arc(10, 10, 3.2, 0, TAU);
+  ctx.fill();
+  glowDot(ctx, 10, 0, 22 + plant.recoil * 16, '#c9b8ff', 0.45);
+}
+
 // A small picture of a seed for the seed bar and the title screen.
 export function drawSeedIcon(ctx, kind, x, y, scale = 1) {
   ctx.save();
@@ -262,6 +309,10 @@ export function drawSeedIcon(ctx, kind, x, y, scale = 1) {
   else if (kind === 'frost') {
     ctx.translate(0, 10);
     drawFrostfern(ctx, { time: 0 });
+  } else if (kind === 'ember') drawEmberpod(ctx, { timer: 0, level: 1 }, { time: 0 });
+  else if (kind === 'bell') {
+    ctx.translate(-9, 0);
+    drawMoonbell(ctx, { recoil: 0 }, { time: 0 });
   } else drawNovalily(ctx, { timer: 0, level: 1 });
   ctx.restore();
 }

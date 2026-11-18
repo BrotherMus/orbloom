@@ -4,7 +4,7 @@ import { COLORS, VIEW } from '../config.js';
 import { drawSky } from './sky.js';
 import { drawPlanet, drawPlots } from './garden.js';
 import { drawEnemies, drawGardener } from './creatures.js';
-import { drawDew, drawSparks, drawThorns } from './sparks.js';
+import { drawDew, drawEmbers, drawSparks, drawThorns } from './sparks.js';
 import { drawHud } from './hud.js';
 import { drawBoonChoice, drawPause, drawResults, drawTitle } from './screens.js';
 
@@ -18,6 +18,7 @@ export function drawFrame(ctx, game, pointer) {
   drawGardener(ctx, game);
   drawEnemies(ctx, game);
   drawThorns(ctx, game);
+  drawEmbers(ctx, game);
   drawSparks(ctx, game);
   ctx.restore();
 

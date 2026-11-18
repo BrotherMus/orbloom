@@ -1,8 +1,8 @@
 // Everything that moves on its own: the Gloam in all its shapes, and Pip the gardener.
 
-import { COLORS, GARDENER, PLANET, TAU } from '../config.js';
+import { COLORS, PLANET, TAU } from '../config.js';
 import { enemyPosition } from '../enemies.js';
-import { gardenerPosition, pulseCooldown } from '../gardener.js';
+import { gardenerPosition, pulseCooldown, pulseRange } from '../gardener.js';
 import { bar, glowDot } from './brush.js';
 
 export function drawEnemies(ctx, game) {
@@ -95,9 +95,10 @@ function drawEclipse(ctx, enemy, size) {
   }
   ctx.shadowColor = COLORS.eye;
   ctx.shadowBlur = 30;
-  ctx.fillStyle = enemy.hitFlash > 0.5 ? '#ffd7e6' : '#0a0416';
-  ctx.strokeStyle = COLORS.ember;
-  ctx.lineWidth = 4;
+  // Under constant fire the Eclipse stays dark; only its rim flares white when it is hit.
+  ctx.fillStyle = '#0a0416';
+  ctx.strokeStyle = enemy.hitFlash > 0.5 ? '#fff6c9' : COLORS.ember;
+  ctx.lineWidth = enemy.hitFlash > 0.5 ? 6 : 4;
   ctx.beginPath();
   ctx.arc(0, 0, size, 0, TAU);
   ctx.fill();
@@ -121,7 +122,7 @@ export function drawGardener(ctx, game) {
     ctx.strokeStyle = 'rgba(255, 209, 102, 0.16)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(at.x, at.y, GARDENER.pulseRange, 0, TAU);
+    ctx.arc(at.x, at.y, pulseRange(game), 0, TAU);
     ctx.stroke();
   }
   ctx.save();

@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/best-game-01/BrotherMus/orbloom/rank.svg)](https://make.fun/bounty/best-game-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
 [![reward](https://make.fun/badge/best-game-01/BrotherMus/orbloom/reward.svg)](https://make.fun/bounty/best-game-01?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
 
-**Orbloom** is an original garden-defence game on a tiny round world. Plant four kinds of seeds on twelve plots, walk Pip the gardener around the planet to gather dew and swing a lantern pulse, pick a boon between nights, and hold back the Gloam (and two Eclipses) for twelve nights until dawn.
+**Orbloom** is an original garden-defence game on a tiny round world. Plant six kinds of seeds on twelve plots, walk Pip the gardener around the planet to gather dew and swing a lantern pulse, pick one of sixteen boons between nights, and hold back six kinds of Gloam (and two Eclipse bosses) for twelve nights until dawn.
 
 ![Orbloom in play](screenshots/1-play.jpg)
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | Click a plot | Plant the chosen seed |
 | Click a plant | Grow it (three levels) |
-| `1` – `4` | Choose Thornbud, Sunpetal, Frostfern or Novalily |
+| `1` – `6` | Choose Thornbud, Sunpetal, Frostfern, Novalily, Emberpod or Moonbell |
 | Right-click / `X` | Uproot a plant for half its dew |
 | `A` / `D` or arrows | Walk Pip around the world; plants beside Pip work faster |
 | `Space` | Lantern pulse: damages and knocks back nearby Gloam |

@@ -17,6 +17,24 @@ export function drawThorns(ctx, game) {
   }
 }
 
+// Embers fly in an arc, so each one draws a short fading tail behind a bright head.
+export function drawEmbers(ctx, game) {
+  for (const ember of game.embers) {
+    glowDot(ctx, ember.x, ember.y, 20, COLORS.ember, 0.9);
+    ctx.fillStyle = '#fff3c4';
+    ctx.beginPath();
+    ctx.arc(ember.x, ember.y, 4.5, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 159, 90, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 6]);
+    ctx.beginPath();
+    ctx.arc(ember.toX, ember.toY, ember.splash, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
 export function drawDew(ctx, game) {
   for (const drop of game.dewDrops) {
     const at = toScreen(drop.angle, drop.distance + (drop.resting ? Math.sin(game.time * 4 + drop.angle * 9) * 2 : 0));

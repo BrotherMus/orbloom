@@ -128,7 +128,7 @@ export function damageEnemy(game, enemy, amount, quiet = false) {
   const at = enemyPosition(enemy);
   const breed = enemy.breed;
   game.combo += 1;
-  game.comboTimer = COMBO_WINDOW;
+  game.comboTimer = COMBO_WINDOW * game.boons.comboWindow;
   game.stats.kills += 1;
   addScore(game, breed.score);
   burst(game, at.x, at.y, COLORS.gloamEdge, breed.size > 30 ? 60 : 14, breed.size > 30 ? 320 : 150);

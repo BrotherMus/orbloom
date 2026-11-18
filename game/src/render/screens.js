@@ -1,6 +1,7 @@
 // Full-screen layers over the garden: the title, the boon choice, the pause veil and the results.
 
 import { BOSS_NIGHTS, COLORS, NIGHTS, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { boonTint } from '../boons.js';
 import { gardenerRank } from '../simulation.js';
 import { newThreat, nightName } from '../waves.js';
 import { glowDot, panel, paragraph, write } from './brush.js';
@@ -32,7 +33,7 @@ export function drawTitle(ctx, game) {
   const steps = [
     ['CLICK', 'a plot to plant the chosen seed'],
     ['CLICK', 'a plant again to grow it (3 levels)'],
-    ['1 – 4', 'choose a seed · right-click uproots'],
+    ['1 – 6', 'choose a seed · right-click uproots'],
     ['A / D', 'walk Pip around the world'],
     ['SPACE', 'swing the lantern: a shock pulse'],
     ['GOAL', 'gather dew, guard the world heart'],
@@ -49,17 +50,17 @@ export function drawTitle(ctx, game) {
   write(ctx, 'YOUR SEEDS', 884, 296, { size: 20, weight: 800, color: COLORS.gold, spacing: 3 });
   SEED_ORDER.forEach((kind, index) => {
     const seed = SEEDS[kind];
-    const y = 352 + index * 76;
-    drawSeedIcon(ctx, kind, 916, y, 1.1);
-    write(ctx, `${seed.name}`, 956, y - 12, { size: 19, weight: 800, color: seed.color });
-    write(ctx, `${seed.cost} dew`, 1216, y - 12, { size: 15, align: 'right', color: COLORS.dim });
-    write(ctx, seed.blurb, 956, y + 13, { size: 15, color: COLORS.ink });
+    const y = 344 + index * 54;
+    drawSeedIcon(ctx, kind, 912, y, 0.95);
+    write(ctx, `${seed.name}`, 950, y - 10, { size: 18, weight: 800, color: seed.color });
+    write(ctx, `${seed.cost} dew`, 1216, y - 10, { size: 14, align: 'right', color: COLORS.dim });
+    write(ctx, seed.blurb, 950, y + 12, { size: 14, color: COLORS.ink });
   });
 
   const pulse = 0.85 + 0.15 * Math.sin(game.time * 4);
   panel(ctx, MIDDLE - 250, 684, 500, 58, { fill: 'rgba(54, 40, 12, 0.94)', edge: COLORS.gold, radius: 29, line: 2.5 });
   write(ctx, 'CLICK or press ENTER to begin', MIDDLE, 714, { size: 26, weight: 800, align: 'center', color: COLORS.gold, alpha: pulse, glow: COLORS.gold });
-  write(ctx, game.best > 0 ? `Best garden: ${game.best.toLocaleString('en-US')} points` : 'Twelve nights · four seeds · eleven boons · two eclipses', MIDDLE, 768, { size: 17, align: 'center', color: COLORS.dim });
+  write(ctx, game.best > 0 ? `Best garden: ${game.best.toLocaleString('en-US')} points` : 'Twelve nights · six seeds · sixteen boons · six kinds of Gloam · two Eclipses', MIDDLE, 768, { size: 17, align: 'center', color: COLORS.dim });
 }
 
 export function boonCardRects() {
@@ -68,8 +69,6 @@ export function boonCardRects() {
   return [0, 1, 2].map((index) => ({ index, x: left + index * (BOON_CARD.width + BOON_CARD.gap), y: BOON_CARD.y, width: BOON_CARD.width, height: BOON_CARD.height }));
 }
 
-const BOON_TINTS = { heart: COLORS.danger, drop: COLORS.ice, thorn: COLORS.leaf, lantern: COLORS.gold, boot: COLORS.ember, basket: COLORS.ice, frost: COLORS.ice, nova: COLORS.nova, leaf: COLORS.leaf, sun: COLORS.gold, rain: COLORS.ice };
-
 export function drawBoonChoice(ctx, game, pointer) {
   veil(ctx, 0.62);
   write(ctx, `NIGHT ${game.night} SURVIVED`, MIDDLE, 118, { size: 54, weight: 800, align: 'center', color: COLORS.gold, spacing: 6, glow: 'rgba(255, 209, 102, 0.7)' });
@@ -77,7 +76,7 @@ export function drawBoonChoice(ctx, game, pointer) {
   for (const card of boonCardRects()) {
     const boon = game.boonChoices[card.index];
     if (!boon) continue;
-    const tint = BOON_TINTS[boon.icon] ?? COLORS.ice;
+    const tint = boonTint(boon);
     const hot = pointer.x >= card.x && pointer.x <= card.x + card.width && pointer.y >= card.y && pointer.y <= card.y + card.height;
     panel(ctx, card.x, card.y - (hot ? 8 : 0), card.width, card.height, { fill: hot ? 'rgba(40, 52, 110, 0.97)' : 'rgba(14, 20, 54, 0.95)', edge: tint, line: hot ? 4 : 2, radius: 20 });
     const top = card.y - (hot ? 8 : 0);

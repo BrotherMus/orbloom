@@ -71,12 +71,81 @@ export function updatePlants(game, dt) {
     plant.grow = Math.min(1, plant.grow + dt * 2.2);
     plant.recoil = Math.max(0, plant.recoil - dt * 6);
     plant.wilt = Math.max(0, plant.wilt - dt);
-    const haste = isTended(game, plot) ? 1 + GARDENER.tendBonus * game.boons.tendBonus : 1;
+    const haste = (isTended(game, plot) ? 1 + GARDENER.tendBonus * game.boons.tendBonus : 1) + bellHaste(game, plot);
     plant.timer -= dt * haste;
     if (plant.kind === 'thorn') tickThornbud(game, plot, plant);
     else if (plant.kind === 'sun') tickSunpetal(game, plot, plant);
     else if (plant.kind === 'nova') tickNovalily(game, plot, plant);
+    else if (plant.kind === 'ember') tickEmberpod(game, plot, plant);
+    else if (plant.kind === 'bell') tickMoonbell(game, plot, plant);
   }
+}
+
+// A Moonbell quickens the plants on the plots either side of it.
+export function bellHaste(game, plot) {
+  let haste = 0;
+  for (const step of [-1, 1]) {
+    const neighbour = game.plots[(plot.index + step + game.plots.length) % game.plots.length].plant;
+    if (neighbour && neighbour.kind === 'bell') haste += SEEDS.bell.haste[neighbour.level - 1];
+  }
+  return haste;
+}
+
+function tickEmberpod(game, plot, plant) {
+  const seed = SEEDS.ember;
+  const tip = plantTip(plot);
+  // Embers go for the toughest creature in reach, where a splash is worth the most.
+  let target = null;
+  for (const enemy of game.enemies) {
+    if (enemy.health <= 0) continue;
+    if (distanceBetween(tip, enemyPosition(enemy)) > seed.range[plant.level - 1]) continue;
+    if (!target || enemy.health > target.health) target = enemy;
+  }
+  if (!target) return;
+  const at = enemyPosition(target);
+  plant.aim = Math.atan2(at.y - tip.y, at.x - tip.x);
+  if (plant.timer > 0) return;
+  plant.timer = seed.interval[plant.level - 1];
+  plant.recoil = 1;
+  game.embers.push({
+    fromX: tip.x, fromY: tip.y, toX: at.x, toY: at.y, x: tip.x, y: tip.y, flight: 0,
+    duration: Math.max(0.35, distanceBetween(tip, at) / 430),
+    damage: seed.damage[plant.level - 1], splash: seed.splash[plant.level - 1] * game.boons.emberSplash,
+  });
+  game.sound('thorn');
+}
+
+function tickMoonbell(game, plot, plant) {
+  if (plant.timer > 0) return;
+  const seed = SEEDS.bell;
+  plant.timer = seed.interval[plant.level - 1];
+  plant.recoil = 1;
+  const tip = plantTip(plot);
+  ring(game, tip.x, tip.y, 60, seed.color, 0.7);
+  if (game.health >= game.maxHealth) return;
+  const mend = seed.mend[plant.level - 1] + game.boons.bellMend;
+  game.health = Math.min(game.maxHealth, game.health + mend);
+  floater(game, tip.x, tip.y - 16, `+${mend} heart`, seed.color);
+  game.sound('dew');
+}
+
+export function updateEmbers(game, dt) {
+  for (const ember of game.embers) {
+    ember.flight += dt / ember.duration;
+    const t = Math.min(1, ember.flight);
+    // A lobbed arc: straight-line travel plus a hump that rises and falls with the flight.
+    ember.x = ember.fromX + (ember.toX - ember.fromX) * t;
+    ember.y = ember.fromY + (ember.toY - ember.fromY) * t - Math.sin(t * Math.PI) * 46;
+    if (t < 1) continue;
+    for (const enemy of game.enemies) {
+      const at = enemyPosition(enemy);
+      if (Math.hypot(at.x - ember.x, at.y - ember.y) < ember.splash + enemy.breed.size) damageEnemy(game, enemy, ember.damage);
+    }
+    ring(game, ember.x, ember.y, ember.splash, COLORS.ember, 0.45);
+    burst(game, ember.x, ember.y, COLORS.ember, 16, 200);
+    game.sound('pop');
+  }
+  game.embers = game.embers.filter((ember) => ember.flight < 1);
 }
 
 function tickThornbud(game, plot, plant) {
@@ -90,10 +159,14 @@ function tickThornbud(game, plot, plant) {
   plant.timer = seed.interval[plant.level - 1];
   plant.recoil = 1;
   const speed = 560;
-  game.thorns.push({
-    x: tip.x, y: tip.y, vx: Math.cos(plant.aim) * speed, vy: Math.sin(plant.aim) * speed,
-    damage: seed.damage[plant.level - 1] + game.boons.thornDamage, life: 0.9,
-  });
+  // The Thorn Volley boon adds a second and third thorn, fanned a little to either side.
+  const fan = game.boons.volley > 0 ? [0, -0.16, 0.16].slice(0, 1 + game.boons.volley * 2) : [0];
+  for (const spread of fan) {
+    game.thorns.push({
+      x: tip.x, y: tip.y, vx: Math.cos(plant.aim + spread) * speed, vy: Math.sin(plant.aim + spread) * speed,
+      damage: seed.damage[plant.level - 1] + game.boons.thornDamage, life: 0.9,
+    });
+  }
   game.sound('thorn');
 }
 

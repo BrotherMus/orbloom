@@ -12,15 +12,18 @@ import { startNight } from './waves.js';
 
 const STEP = 1 / 60;
 const GARDEN = [
-  ['thorn', 3], ['sun', 2], ['frost', 2], ['thorn', 2], ['nova', 2], ['thorn', 3],
-  ['sun', 3], ['thorn', 2], ['frost', 1], ['nova', 3], ['thorn', 2], ['sun', 2],
+  ['thorn', 3], ['sun', 2], ['frost', 2], ['ember', 2], ['nova', 2], ['thorn', 3],
+  ['sun', 3], ['bell', 2], ['thorn', 2], ['nova', 3], ['ember', 3], ['thorn', 2],
 ];
 
 export function shotRequest() {
   const query = new URLSearchParams(window.location.search);
   const name = query.get('shot');
   // live=1 keeps playing from the staged moment, which is how the later nights are play-tested.
-  return name ? { name, seed: Number(query.get('seed')) || 1, seconds: Number(query.get('seconds')) || 20, live: query.get('live') === '1' } : null;
+  return name ? {
+    name, seed: Number(query.get('seed')) || 1, seconds: Number(query.get('seconds')) || 20,
+    night: Number(query.get('night')) || 12, live: query.get('live') === '1',
+  } : null;
 }
 
 // Grow a mid-run garden the way a player would have by this night: plant, then upgrade.
@@ -76,14 +79,16 @@ export function stageShot(game, shot) {
     game.mode = 'won';
     return;
   }
-  // 'play': the sixth night, mid-fight, with the Eclipse closing in.
-  growGarden(game, GARDEN, ['keen', 'honeydew', 'lantern', 'thumb', 'hoarfrost']);
+  // 'play': an Eclipse night, mid-fight, with the garden a player would have grown by then.
+  const night = shot.night;
+  const boonsByNow = ['keen', 'honeydew', 'lantern', 'thumb', 'hoarfrost', 'volley', 'wildfire', 'roots', 'starlit', 'supernova', 'bloomburst'].slice(0, night - 1);
+  growGarden(game, GARDEN.map(([kind, level]) => [kind, night >= 10 ? 3 : level]), boonsByNow);
   game.dew = 85;
-  game.score = 14240;
-  game.best = 31900;
-  game.health = 17;
-  game.stats = { kills: 171, planted: 12, dewGathered: 1040, nights: 5 };
-  startNight(game, 6);
+  game.score = night * night * 610 + 240;
+  game.best = 96400;
+  game.health = game.maxHealth - 5;
+  game.stats = { kills: night * 62, planted: 12 + night, dewGathered: night * 260, nights: night - 1 };
+  startNight(game, night);
   playFor(game, shot.seconds - 1.2);
   // Skip the Eclipse's long approach so the frame catches it bearing down on the garden.
   const eclipse = game.enemies.find((enemy) => enemy.kind === 'eclipse');

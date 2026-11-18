@@ -1,12 +1,14 @@
 // The heads-up display during play: night, world heart, score and combo, dew, the seed bar and the lantern.
 
-import { COLORS, NIGHTS, PLANET, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { BOSS_NIGHTS, COLORS, NIGHTS, PLANET, SEEDS, SEED_ORDER, VIEW } from '../config.js';
+import { BOONS, boonTint } from '../boons.js';
 import { pulseCooldown } from '../gardener.js';
 import { newThreat, nightName, nightProgress } from '../waves.js';
 import { bar, glowDot, panel, write } from './brush.js';
 import { drawSeedIcon } from './garden.js';
 
-const CARD = { width: 168, height: 74, gap: 10, y: 712 };
+const CARD = { width: 121, height: 74, gap: 8, y: 712 };
+const SIDE_PANEL = 226;
 
 export function seedCardRects() {
   const total = SEED_ORDER.length * CARD.width + (SEED_ORDER.length - 1) * CARD.gap;
@@ -72,11 +74,13 @@ function drawCoach(ctx, game) {
 }
 
 function drawNightPanel(ctx, game) {
-  panel(ctx, 20, 16, 300, 86);
+  panel(ctx, 20, 16, 300, 104);
   write(ctx, `NIGHT ${game.night}`, 38, 44, { size: 30, weight: 800, color: COLORS.ice, spacing: 1 });
   write(ctx, `of ${NIGHTS}`, 302, 40, { size: 18, align: 'right', color: COLORS.dim });
   write(ctx, nightName(game.night), 302, 62, { size: 15, align: 'right', color: COLORS.nova });
   bar(ctx, 38, 78, 264, 9, nightProgress(game), COLORS.ice);
+  drawNightPips(ctx, game);
+  drawBoonRow(ctx, game);
 }
 
 function drawHeartPanel(ctx, game) {
@@ -98,7 +102,7 @@ function drawScorePanel(ctx, game) {
 }
 
 function drawDewPanel(ctx, game) {
-  panel(ctx, 20, CARD.y, 236, CARD.height);
+  panel(ctx, 20, CARD.y, SIDE_PANEL, CARD.height);
   glowDot(ctx, 56, CARD.y + 37, 26, COLORS.ice, 0.8);
   ctx.fillStyle = '#eaffff';
   ctx.beginPath();
@@ -118,22 +122,55 @@ function drawSeedBar(ctx, game) {
     });
     ctx.save();
     ctx.globalAlpha = affordable ? 1 : 0.4;
-    drawSeedIcon(ctx, card.kind, card.x + 34, card.y + 38, 1.05);
-    write(ctx, seed.name, card.x + 66, card.y + 24, { size: 18, weight: 800, color: seed.color });
-    write(ctx, `${seed.cost} dew`, card.x + 66, card.y + 50, { size: 16, color: affordable ? COLORS.ink : COLORS.danger });
+    drawSeedIcon(ctx, card.kind, card.x + 26, card.y + 30, 0.9);
+    write(ctx, seed.name, card.x + card.width / 2, card.y + 58, { size: 14, weight: 800, align: 'center', color: seed.color });
+    write(ctx, `${seed.cost}`, card.x + 62, card.y + 30, { size: 22, weight: 800, color: affordable ? COLORS.ice : COLORS.danger });
     ctx.restore();
-    write(ctx, seed.key, card.x + card.width - 16, card.y + 16, { size: 15, weight: 800, align: 'center', color: COLORS.dim });
+    write(ctx, seed.key, card.x + card.width - 13, card.y + 14, { size: 14, weight: 800, align: 'center', color: COLORS.dim });
   }
 }
 
 function drawLanternPanel(ctx, game) {
-  const x = VIEW.width - 256;
-  panel(ctx, x, CARD.y, 236, CARD.height);
+  const x = VIEW.width - 20 - SIDE_PANEL;
+  panel(ctx, x, CARD.y, SIDE_PANEL, CARD.height);
   const ready = game.gardener.pulseTimer <= 0;
   glowDot(ctx, x + 36, CARD.y + 37, ready ? 28 : 12, COLORS.gold, ready ? 0.9 : 0.4);
   write(ctx, 'LANTERN', x + 66, CARD.y + 22, { size: 15, weight: 700, color: COLORS.dim, spacing: 2 });
   write(ctx, ready ? 'SPACE · ready!' : 'recharging…', x + 66, CARD.y + 44, { size: 18, weight: 800, color: ready ? COLORS.gold : COLORS.dim });
-  bar(ctx, x + 66, CARD.y + 58, 150, 6, 1 - game.gardener.pulseTimer / pulseCooldown(game), COLORS.gold);
+  bar(ctx, x + 66, CARD.y + 58, 140, 6, 1 - game.gardener.pulseTimer / pulseCooldown(game), COLORS.gold);
+}
+
+// The boons gathered so far, as a row of little tinted badges under the night panel.
+function drawBoonRow(ctx, game) {
+  const taken = game.boons.taken;
+  if (taken.length === 0) return;
+  write(ctx, 'BOONS', 24, 140, { size: 13, weight: 800, color: COLORS.dim, spacing: 2 });
+  taken.slice(0, 11).forEach((id, index) => {
+    const boon = BOONS.find((entry) => entry.id === id);
+    const tint = boonTint(boon);
+    const x = 96 + index * 28;
+    glowDot(ctx, x, 140, 16, tint, 0.5);
+    ctx.fillStyle = '#0b1030';
+    ctx.strokeStyle = tint;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, 140, 10.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    write(ctx, boon.name[0], x, 141, { size: 12, weight: 800, align: 'center', color: tint });
+  });
+}
+
+// Twelve pips along the bottom of the night panel: nights survived, tonight, and the Eclipse nights.
+function drawNightPips(ctx, game) {
+  for (let night = 1; night <= NIGHTS; night++) {
+    const x = 44 + (night - 1) * 23;
+    const boss = BOSS_NIGHTS.includes(night);
+    ctx.fillStyle = night < game.night ? COLORS.gold : night === game.night ? COLORS.ice : boss ? COLORS.eye : 'rgba(255,255,255,0.18)';
+    ctx.beginPath();
+    ctx.arc(x, 104, boss ? 5.5 : night === game.night ? 5 : 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawBossBar(ctx, game) {

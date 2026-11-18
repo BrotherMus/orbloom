@@ -13,6 +13,10 @@ export function pulseCooldown(game) {
   return GARDENER.pulseCooldown * game.boons.pulseCooldown;
 }
 
+export function pulseRange(game) {
+  return GARDENER.pulseRange * (1 + game.boons.pulsePower * 0.2);
+}
+
 // controls: { walk: -1 | 0 | 1, pulse: boolean }
 export function updateGardener(game, controls, dt) {
   const pip = game.gardener;
@@ -30,14 +34,15 @@ function lanternPulse(game) {
   const pip = game.gardener;
   const from = gardenerPosition(game);
   pip.pulseTimer = pulseCooldown(game);
-  ring(game, from.x, from.y, GARDENER.pulseRange, COLORS.gold, 0.5);
+  const range = pulseRange(game);
+  ring(game, from.x, from.y, range, COLORS.gold, 0.5);
   burst(game, from.x, from.y, COLORS.gold, 26, 260);
   game.shake = Math.max(game.shake, 5);
   for (const enemy of game.enemies) {
-    if (distanceBetween(from, enemyPosition(enemy)) > GARDENER.pulseRange + enemy.breed.size) continue;
+    if (distanceBetween(from, enemyPosition(enemy)) > range + enemy.breed.size) continue;
     if (enemy.chewing >= 0) enemy.chewing = -1;
     enemy.distance += enemy.breed.size > 30 ? 20 : 70;
-    damageEnemy(game, enemy, GARDENER.pulseDamage);
+    damageEnemy(game, enemy, GARDENER.pulseDamage + game.boons.pulsePower * 2);
   }
   game.sound('pulse');
 }

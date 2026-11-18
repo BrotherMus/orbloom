@@ -22,6 +22,7 @@ export function resetRun(game) {
   game.gardener = { angle: -Math.PI / 2, facing: 1, stride: 0, pulseTimer: 0, walking: false };
   game.enemies = [];
   game.thorns = [];
+  game.embers = [];
   game.dewDrops = [];
   game.particles = [];
   game.rings = [];
@@ -29,7 +30,10 @@ export function resetRun(game) {
   game.selectedSeed = 'thorn';
   game.hoverPlot = -1;
   game.wave = { queue: [], fronts: [], clock: 0, total: 0, spawned: 0 };
-  game.boons = { thornDamage: 0, dewGain: 1, pulseCooldown: 1, walkSpeed: 1, reach: 1, frostPower: 0, novaRadius: 1, tendBonus: 1, sunGain: 1, taken: [] };
+  game.boons = {
+    thornDamage: 0, dewGain: 1, pulseCooldown: 1, walkSpeed: 1, reach: 1, frostPower: 0, novaRadius: 1, tendBonus: 1, sunGain: 1,
+    emberSplash: 1, bellMend: 0, volley: 0, comboWindow: 1, pulsePower: 0, taken: [],
+  };
   game.boonChoices = [];
   game.stats = { kills: 0, planted: 0, dewGathered: 0, nights: 0 };
   game.shake = 0;
