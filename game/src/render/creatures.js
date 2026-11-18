@@ -12,12 +12,15 @@ export function drawEnemies(ctx, game) {
     const wobble = 1 + Math.sin(enemy.age * 5) * 0.06;
     // Smoke trails away from the planet, the way the creature came.
     const away = { x: Math.cos(enemy.angle), y: Math.sin(enemy.angle) };
-    ctx.fillStyle = 'rgba(139, 77, 255, 0.22)';
+    // Each breed has its own colour, so a glance tells a Darter from a Gnawer from a Husk.
+    ctx.fillStyle = enemy.breed.tint;
+    ctx.globalAlpha = 0.22;
     for (let puff = 1; puff <= 3; puff++) {
       ctx.beginPath();
       ctx.arc(at.x + away.x * size * puff * 0.75, at.y + away.y * size * puff * 0.75 + Math.sin(enemy.age * 4 + puff) * 3, size * (0.75 - puff * 0.16), 0, TAU);
       ctx.fill();
     }
+    ctx.globalAlpha = 1;
     ctx.save();
     ctx.translate(at.x, at.y);
     ctx.rotate(enemy.angle + Math.PI / 2);
@@ -34,11 +37,12 @@ export function drawEnemies(ctx, game) {
 
 // In this frame +y points at the planet, so eyes and teeth sit on the +y side.
 function drawShade(ctx, enemy, size) {
-  ctx.shadowColor = COLORS.gloamEdge;
+  const tint = enemy.breed.tint;
+  ctx.shadowColor = tint;
   ctx.shadowBlur = 14;
   ctx.fillStyle = enemy.hitFlash > 0.5 ? '#ffffff' : COLORS.gloam;
-  ctx.strokeStyle = COLORS.gloamEdge;
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = tint;
+  ctx.lineWidth = enemy.kind === 'husk' ? 4.5 : 2.5;
   ctx.beginPath();
   if (enemy.kind === 'darter') {
     ctx.moveTo(0, size * 1.5);
@@ -55,7 +59,7 @@ function drawShade(ctx, enemy, size) {
   ctx.stroke();
   ctx.shadowBlur = 0;
   if (enemy.kind === 'husk') {
-    ctx.strokeStyle = 'rgba(139, 77, 255, 0.7)';
+    ctx.strokeStyle = 'rgba(217, 204, 255, 0.75)';
     ctx.lineWidth = 3;
     for (const shell of [0.45, 0.72]) {
       ctx.beginPath();
@@ -63,7 +67,7 @@ function drawShade(ctx, enemy, size) {
       ctx.stroke();
     }
   }
-  ctx.fillStyle = COLORS.eye;
+  ctx.fillStyle = enemy.kind === 'darter' || enemy.kind === 'gnawer' ? '#fff3c4' : COLORS.eye;
   const eyes = enemy.kind === 'darter' ? [0] : enemy.kind === 'twin' ? [-0.45, 0.45] : [-0.35, 0.35];
   for (const eye of eyes) {
     ctx.beginPath();

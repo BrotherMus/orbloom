@@ -44,6 +44,29 @@ export function drawPlanet(ctx, game) {
   ctx.beginPath();
   ctx.arc(x, y, radius + 3, 0, TAU);
   ctx.stroke();
+  drawGrassTufts(ctx, game);
+}
+
+// Little tufts of grass between the plots, swaying, so the world looks lived on.
+function drawGrassTufts(ctx, game) {
+  ctx.strokeStyle = COLORS.leaf;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  for (let tuft = 0; tuft < PLANET.plotCount; tuft++) {
+    const angle = -Math.PI / 2 + ((tuft + 0.5) * TAU) / PLANET.plotCount;
+    ctx.save();
+    ctx.translate(PLANET.x, PLANET.y);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.translate(0, -PLANET.radius - 2);
+    const sway = Math.sin(game.time * 2.2 + tuft * 1.7) * 2;
+    for (const blade of [-5, 0, 5]) {
+      ctx.beginPath();
+      ctx.moveTo(blade, 0);
+      ctx.quadraticCurveTo(blade + sway * 0.5, -6, blade * 1.5 + sway, -11 - (blade === 0 ? 4 : 0));
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 
 // Draw with the plot's own frame: the origin on the surface, and -y pointing away from the planet.
